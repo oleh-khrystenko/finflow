@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import type { UserProfile } from '@lucidship/types';
+import type { UserProfile } from '@finflow/types';
 import { AxiosError } from 'axios';
 import UiButton from '@/shared/ui/UiButton';
 import UiPasswordInput from '@/shared/ui/UiPasswordInput';

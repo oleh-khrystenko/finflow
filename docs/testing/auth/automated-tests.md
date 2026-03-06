@@ -6,7 +6,7 @@
 
 ## Покриття
 
-Unit, integration (e2e) та frontend unit тести для повного покриття авторизаційного потоку LucidShip.
+Unit, integration (e2e) та frontend unit тести для повного покриття авторизаційного потоку FinFlow.
 
 **Scope:**
 
@@ -273,7 +273,7 @@ createMagicLinkToken(email, purpose) → зберігає token в mocked Redis,
 4. Налаштуй path aliases (`@/*` → `./src/*`)
 5. Налаштуй мокування Next.js modules (`next/navigation`, `next/headers`, `next-intl`)
 
-**ВАЖЛИВО:** Перевір `apps/web/tsconfig.json` та `apps/web/next.config.ts` для правильних path aliases. Переконайся, що jest конфіг резолвить `@lucidship/types` правильно (може потребувати `moduleNameMapper`).
+**ВАЖЛИВО:** Перевір `apps/web/tsconfig.json` та `apps/web/next.config.ts` для правильних path aliases. Переконайся, що jest конфіг резолвить `@finflow/types` правильно (може потребувати `moduleNameMapper`).
 
 ### 4.2 `apps/web/src/shared/api/client.spec.ts`
 
@@ -331,7 +331,7 @@ createMagicLinkToken(email, purpose) → зберігає token в mocked Redis,
 | Error code без module | `getApiMessageKey('UNAUTHORIZED')` | `'errors.generic.unauthorized'` |
 | Невідомий code без module | `getApiMessageKey('UNKNOWN_CODE')` | `'errors.generic.unknown_code'` |
 
-**Мокування:** Потрібно мокнути `RESPONSE_CODE_TYPE` з `@lucidship/types`.
+**Мокування:** Потрібно мокнути `RESPONSE_CODE_TYPE` з `@finflow/types`.
 
 ### 4.5 `apps/web/src/stores/auth/authStore.spec.ts`
 

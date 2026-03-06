@@ -37,7 +37,7 @@ packages/types/src/
   agency.ts         # Окремий entry point для agency
 ```
 
-Agency-код імпортує типи через `@lucidship/types/agency` (окремий export у package.json), а не через головний `@lucidship/types`.
+Agency-код імпортує типи через `@finflow/types/agency` (окремий export у package.json), а не через головний `@finflow/types`.
 
 ## Однонаправлений потік залежностей
 
