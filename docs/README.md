@@ -12,7 +12,7 @@
 
 ## Поточне наповнення
 
-- `docs/vision/product.md` — повний опис проекту Lucid Ship
+- `docs/vision/product.md` — концепція та позиціонування FinFlow
 - `docs/planning/README.md`
 - `docs/planning/auth-flow/` — повна специфікація auth-flow (17 документів)
 - `docs/planning/payments-mvp-implementation-blueprint.md`
