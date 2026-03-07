@@ -5,7 +5,7 @@ import type {
     UpdateProfileDto,
     UserProfile,
     VerifyMagicLinkResponse,
-} from '@lucidship/types';
+} from '@finflow/types';
 
 import { apiClient, setAccessToken } from './client';
 

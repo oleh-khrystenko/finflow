@@ -1,5 +1,5 @@
 import { defineRouting } from 'next-intl/routing';
-import { LANG } from '@lucidship/types';
+import { LANG } from '@finflow/types';
 
 export const routing = defineRouting({
     locales: Object.values(LANG),

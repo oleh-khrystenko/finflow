@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
 
-import { VerifyMagicLinkSchema } from '@lucidship/types';
+import { VerifyMagicLinkSchema } from '@finflow/types';
 
 export class VerifyMagicLinkDto extends createZodDto(VerifyMagicLinkSchema) {}

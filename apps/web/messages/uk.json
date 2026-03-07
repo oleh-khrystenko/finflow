@@ -1,16 +1,16 @@
 {
     "welcome_page": {
         "head": {
-            "title": "LucidShip – Готовий SaaS-бойлерплейт",
-            "description": "LucidShip – готовий SaaS-бойлерплейт з auth, payments, i18n та темами з коробки."
+            "title": "FinFlow – Готовий SaaS-бойлерплейт",
+            "description": "FinFlow – готовий SaaS-бойлерплейт з auth, payments, i18n та темами з коробки."
         },
-        "heading": "LucidShip — ваш готовий SaaS-стартер.",
+        "heading": "FinFlow — ваш готовий SaaS-стартер.",
         "description": "Все необхідне для швидкого запуску вашого web-додатка.",
         "cta": "Розпочати"
     },
     "auth_page": {
         "signin": {
-            "heading": "Вхід до LucidShip",
+            "heading": "Вхід до FinFlow",
             "subheading": "Запустіть свій SaaS швидше — auth, payments та i18n з коробки",
             "email_label": "Email",
             "email_placeholder": "your@email.com",
