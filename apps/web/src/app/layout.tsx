@@ -1,9 +1,18 @@
 import { ReactNode } from 'react';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import '@/app/globals.css';
 import { Header } from '@/widgets/header';
 import { AuthInitializer } from '@/features/auth';
 import { Providers } from '@/app/providers';
+import { rootMetadata } from '@/shared/seo/metadata';
+
+export const metadata: Metadata = rootMetadata;
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+};
 
 const mulish = localFont({
     src: [

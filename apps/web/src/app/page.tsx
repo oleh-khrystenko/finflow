@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 import { fetchMetadata } from '@/shared/seo/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-    return await fetchMetadata({ page: 'welcome', href: 'welcome' });
+export function generateMetadata(): Metadata {
+    return fetchMetadata({ page: 'welcome' });
 }
 
 export default function HomePage() {

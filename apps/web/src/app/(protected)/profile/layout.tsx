@@ -3,13 +3,9 @@ import { Metadata } from 'next';
 import { fetchMetadata } from '@/shared/seo/metadata';
 
 export function generateMetadata(): Metadata {
-    return fetchMetadata({ page: 'billing', path: '/billing' });
+    return fetchMetadata({ page: 'profile', path: '/profile' });
 }
 
-export default function BillingLayout({
-    children,
-}: {
-    children: ReactNode;
-}) {
+export default function ProfileLayout({ children }: { children: ReactNode }) {
     return <>{children}</>;
 }
