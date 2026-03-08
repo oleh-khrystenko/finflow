@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
     PAYMENTS_SUBSCRIPTION_ENABLED,
@@ -18,8 +17,6 @@ import UiButton from '@/shared/ui/UiButton';
 import UiSpinner from '@/shared/ui/UiSpinner';
 
 export default function BillingPage() {
-    const t = useTranslations('billing_page');
-    const locale = useLocale();
     const user = useAuthStore((s) => s.user);
     const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
@@ -30,10 +27,11 @@ export default function BillingPage() {
 
     const formatDate = (date: Date | string | null) => {
         if (!date) return '';
-        return new Intl.DateTimeFormat(
-            locale === 'uk' ? 'uk-UA' : 'en-US',
-            { year: 'numeric', month: 'long', day: 'numeric' },
-        ).format(date instanceof Date ? date : new Date(date));
+        return new Intl.DateTimeFormat('uk-UA', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        }).format(date instanceof Date ? date : new Date(date));
     };
 
     const handleSubscriptionCheckout = async () => {
@@ -43,7 +41,7 @@ export default function BillingPage() {
                 await createSubscriptionCheckout('monthly_usd');
             window.location.assign(checkoutUrl);
         } catch {
-            toast.error(t('subscribe.error'));
+            toast.error('Не вдалося створити сесію оплати');
             setLoadingAction(null);
         }
     };
@@ -54,7 +52,9 @@ export default function BillingPage() {
             const { checkoutUrl } = await createOneOffCheckout(packCode);
             window.location.assign(checkoutUrl);
         } catch {
-            toast.error(t('credits.error'));
+            toast.error(
+                'Не вдалося створити сесію оплати. Спробуйте ще раз.'
+            );
             setLoadingAction(null);
         }
     };
@@ -65,7 +65,7 @@ export default function BillingPage() {
             const { portalUrl } = await createPortalSession();
             window.location.assign(portalUrl);
         } catch {
-            toast.error(t('active.manage_error'));
+            toast.error('Не вдалося відкрити портал керування');
             setLoadingAction(null);
         }
     };
@@ -78,13 +78,14 @@ export default function BillingPage() {
                     {!hasActive ? (
                         <>
                             <h2 className="text-text-primary mb-2 text-2xl font-bold">
-                                {t('subscribe.title')}
+                                Оформіть підписку
                             </h2>
                             <p className="text-text-secondary mb-6">
-                                {t('subscribe.description')}
+                                Відкрийте преміум-можливості для свого
+                                продукту.
                             </p>
                             <p className="text-text-primary mb-6 font-medium">
-                                {t('subscribe.plan_label')}
+                                План: Monthly
                             </p>
                             <UiButton
                                 onClick={handleSubscriptionCheckout}
@@ -93,46 +94,36 @@ export default function BillingPage() {
                                 {loadingAction === 'subscribe' ? (
                                     <UiSpinner size="sm" />
                                 ) : (
-                                    t('subscribe.button')
+                                    'Оформити підписку'
                                 )}
                             </UiButton>
                         </>
                     ) : (
                         <>
                             <h2 className="text-text-primary mb-6 text-2xl font-bold">
-                                {t('active.title')}
+                                Ваша підписка
                             </h2>
                             <div className="mb-6 space-y-2">
                                 <p className="text-text-secondary">
                                     {billing?.cancelAtPeriodEnd
-                                        ? t('active.status_canceling', {
-                                              date: formatDate(
-                                                  billing?.currentPeriodEnd ??
-                                                      null,
-                                              ),
-                                          })
-                                        : t('active.status_active')}
+                                        ? `Активна до ${formatDate(billing?.currentPeriodEnd ?? null)}`
+                                        : 'Активна'}
                                 </p>
                                 {billing?.planCode && (
                                     <p className="text-text-secondary">
-                                        {t('active.plan_label', {
-                                            plan: billing.planCode,
-                                        })}
+                                        {`План: ${billing.planCode}`}
                                     </p>
                                 )}
                                 {billing?.currentPeriodEnd &&
                                     !billing?.cancelAtPeriodEnd && (
                                         <p className="text-text-secondary">
-                                            {t('active.next_billing', {
-                                                date: formatDate(
-                                                    billing.currentPeriodEnd,
-                                                ),
-                                            })}
+                                            {`Наступне списання: ${formatDate(billing.currentPeriodEnd)}`}
                                         </p>
                                     )}
                                 {billing?.cancelAtPeriodEnd && (
                                     <p className="text-warning text-sm">
-                                        {t('active.cancel_notice')}
+                                        Підписку буде скасовано після
+                                        завершення поточного періоду.
                                     </p>
                                 )}
                             </div>
@@ -143,7 +134,7 @@ export default function BillingPage() {
                                 {loadingAction === 'portal' ? (
                                     <UiSpinner size="sm" />
                                 ) : (
-                                    t('active.manage_button')
+                                    'Керувати підпискою'
                                 )}
                             </UiButton>
                         </>
@@ -155,15 +146,14 @@ export default function BillingPage() {
             {PAYMENTS_ONE_OFF_ENABLED && (
                 <section>
                     <h2 className="text-text-primary mb-2 text-2xl font-bold">
-                        {t('credits.title')}
+                        Кредити
                     </h2>
                     <p className="text-text-secondary mb-6">
-                        {t('credits.description')}
+                        Придбайте кредити для використання послуг. Кожна
+                        дія списує 1 кредит.
                     </p>
                     <p className="text-text-secondary mb-6">
-                        {t('credits.balance', {
-                            count: user.credits.balance,
-                        })}
+                        {`Поточний баланс: ${user.credits.balance} кр.`}
                     </p>
                     <div className="space-y-3">
                         {(
@@ -177,15 +167,16 @@ export default function BillingPage() {
                                 className="flex items-center justify-between"
                             >
                                 <span className="text-text-primary">
-                                    {t('credits.pack_label', {
-                                        count: pack.credits,
-                                    })}
+                                    {`${pack.credits} кредитів`}
                                 </span>
                                 <UiButton
                                     onClick={() =>
                                         handleOneOffCheckout(packCode)
                                     }
-                                    disabled={loadingAction === `oneoff_${packCode}`}
+                                    disabled={
+                                        loadingAction ===
+                                        `oneoff_${packCode}`
+                                    }
                                     variant="text"
                                     size="sm"
                                 >
@@ -193,7 +184,7 @@ export default function BillingPage() {
                                     `oneoff_${packCode}` ? (
                                         <UiSpinner size="sm" />
                                     ) : (
-                                        t('credits.buy_button')
+                                        'Придбати'
                                     )}
                                 </UiButton>
                             </div>

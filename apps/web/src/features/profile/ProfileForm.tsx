@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import type { UserProfile } from '@finflow/types';
 import UiButton from '@/shared/ui/UiButton';
@@ -36,7 +35,6 @@ const ProfileForm = ({
     nameRequired,
     onSaved,
 }: ProfileFormProps) => {
-    const t = useTranslations('profile_page.form');
     const setUser = useAuthStore((s) => s.setUser);
 
     const parsed = parseName(user.profile.name);
@@ -49,7 +47,7 @@ const ProfileForm = ({
         e.preventDefault();
 
         if (nameRequired && !firstName.trim()) {
-            setNameError(t('name_required'));
+            setNameError("Ім'я обов'язкове");
             return;
         }
 
@@ -63,10 +61,10 @@ const ProfileForm = ({
             });
             const me = await getMe();
             setUser(me);
-            toast.success(t('saved'));
+            toast.success('Профіль оновлено');
             onSaved?.();
         } catch {
-            toast.error(t('save_error'));
+            toast.error('Не вдалося зберегти профіль');
         } finally {
             setSubmitting(false);
         }
@@ -76,14 +74,14 @@ const ProfileForm = ({
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
                 <label className="text-text-secondary mb-1 block text-sm">
-                    {t('name_label')}
+                    {"Ім'я"}
                     {nameRequired && (
                         <span className="text-error ml-1">*</span>
                     )}
                 </label>
                 <UiInput
                     type="text"
-                    placeholder={t('name_placeholder')}
+                    placeholder="Ваше ім'я"
                     value={firstName}
                     onChange={(e) => {
                         setFirstName(e.target.value);
@@ -97,11 +95,11 @@ const ProfileForm = ({
 
             <div>
                 <label className="text-text-secondary mb-1 block text-sm">
-                    {t('last_name_label')}
+                    Прізвище
                 </label>
                 <UiInput
                     type="text"
-                    placeholder={t('last_name_placeholder')}
+                    placeholder="Ваше прізвище"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     disabled={!editable}
@@ -120,7 +118,7 @@ const ProfileForm = ({
                     {submitting ? (
                         <UiSpinner size="sm" />
                     ) : (
-                        t('save_button')
+                        'Зберегти'
                     )}
                 </UiButton>
             )}

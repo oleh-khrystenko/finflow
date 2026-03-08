@@ -11,11 +11,7 @@ import {
     UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import {
-    LANG,
-    MAGIC_LINK_PURPOSE,
-    type MagicLinkPurpose,
-} from '@finflow/types';
+import { MAGIC_LINK_PURPOSE, type MagicLinkPurpose } from '@finflow/types';
 import Redis from 'ioredis';
 
 import { REDIS_CLIENT } from '../../common/providers/redis.provider';
@@ -194,14 +190,10 @@ export class AuthService {
         pipeline.set(dedupKey, token, 'EX', ENV.AUTH_MAGIC_LINK_DEDUP_SEC);
         await pipeline.exec();
 
-        const user = await this.usersService.findByEmail(normalizedEmail);
-        const lang = user?.preferredLang ?? LANG.UK;
-
         await this.emailService.sendMagicLink(
             normalizedEmail,
             token,
-            purpose,
-            lang
+            purpose
         );
     }
 
@@ -255,19 +247,12 @@ export class AuthService {
         };
     }
 
-    async sendDeletionConfirmationEmail(
-        email: string,
-        lang: string
-    ): Promise<void> {
+    async sendDeletionConfirmationEmail(email: string): Promise<void> {
         const deletionDate = new Date();
         deletionDate.setDate(
             deletionDate.getDate() + ENV.ACCOUNT_DELETION_GRACE_DAYS
         );
-        await this.emailService.sendDeletionConfirmation(
-            email,
-            deletionDate,
-            lang
-        );
+        await this.emailService.sendDeletionConfirmation(email, deletionDate);
     }
 
     private async handleDeleteAccountVerification(email: string): Promise<{
@@ -280,7 +265,7 @@ export class AuthService {
 
         await this.usersService.softDelete(user._id.toString());
         await this.revokeAllUserTokens(user._id.toString());
-        await this.sendDeletionConfirmationEmail(email, user.preferredLang);
+        await this.sendDeletionConfirmationEmail(email);
 
         return {
             deleted: true,

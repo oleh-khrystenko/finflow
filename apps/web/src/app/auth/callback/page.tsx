@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import UiButton from '@/shared/ui/UiButton';
 import UiFullPageLoader from '@/shared/ui/UiFullPageLoader';
@@ -11,10 +10,7 @@ import { refreshToken, getMe, restoreAccount } from '@/shared/api';
 import { useAuthStore } from '@/stores/auth';
 
 export default function CallbackPage() {
-    const t = useTranslations('auth_page.callback');
-    const tRecovery = useTranslations('auth_page.recovery');
     const router = useRouter();
-    const { locale } = useParams<{ locale: string }>();
 
     const [accountDeleted, setAccountDeleted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -37,26 +33,26 @@ export default function CallbackPage() {
 
                 const user = await getMe();
                 useAuthStore.getState().setUser(user);
-                router.replace(`/${locale}/profile`);
+                router.replace('/profile');
             } catch {
-                router.replace(`/${locale}/auth/signin`);
+                router.replace('/auth/signin');
             }
         };
 
         void authenticate();
-    }, [router, locale]);
+    }, [router]);
 
     const handleRestore = async () => {
         setSubmitting(true);
         try {
             await restoreAccount();
-            toast.success(tRecovery('restored'));
+            toast.success('Акаунт відновлено!');
             const user = await getMe();
             useAuthStore.getState().setUser(user);
-            router.replace(`/${locale}/profile`);
+            router.replace('/profile');
         } catch {
             setSubmitting(false);
-            router.replace(`/${locale}/auth/signin`);
+            router.replace('/auth/signin');
         }
     };
 
@@ -65,10 +61,11 @@ export default function CallbackPage() {
             <main className="flex min-h-screen items-center justify-center px-4">
                 <div className="w-full max-w-md space-y-6 text-center">
                     <h1 className="text-text-primary text-3xl font-bold">
-                        {tRecovery('title')}
+                        Акаунт деактивовано
                     </h1>
                     <p className="text-text-secondary">
-                        {t('account_deleted_description')}
+                        Ваш акаунт заплановано до видалення. Відновіть
+                        його, натиснувши кнопку нижче.
                     </p>
                     <UiButton
                         variant="filled"
@@ -80,7 +77,7 @@ export default function CallbackPage() {
                         {submitting ? (
                             <UiSpinner size="sm" />
                         ) : (
-                            tRecovery('restore_button')
+                            'Відновити акаунт'
                         )}
                     </UiButton>
                 </div>
@@ -88,5 +85,5 @@ export default function CallbackPage() {
         );
     }
 
-    return <UiFullPageLoader message={t('loading')} />;
+    return <UiFullPageLoader message="Авторизація…" />;
 }

@@ -887,13 +887,11 @@ describe('Auth E2E', () => {
                     profile: object;
                     credits: object;
                     hasPassword: boolean;
-                    preferredLang: string;
                     deletedAt: null;
                 };
             };
             expect(body.data.email).toBe('user@example.com');
             expect(body.data.hasPassword).toBe(true);
-            expect(body.data.preferredLang).toBeDefined();
             expect(body.data.id).toBeDefined();
             expect(body.data.profile).toBeDefined();
             expect(body.data.credits).toBeDefined();
@@ -931,31 +929,6 @@ describe('Auth E2E', () => {
                 .expect(401);
         });
 
-        it('PATCH /api/users/me/lang should update language', async () => {
-            await createUserWithPassword('user@example.com', 'password123');
-            const { accessToken } = await loginWithPassword(
-                'user@example.com',
-                'password123'
-            );
-
-            await supertest(app.getHttpServer())
-                .patch('/api/users/me/lang')
-                .set('Authorization', `Bearer ${accessToken}`)
-                .send({ lang: 'en' })
-                .expect(200);
-
-            const user = await userModel.findOne({
-                email: 'user@example.com',
-            });
-            expect(user?.preferredLang).toBe('en');
-        });
-
-        it('PATCH /api/users/me/lang should return 401 without auth', async () => {
-            await supertest(app.getHttpServer())
-                .patch('/api/users/me/lang')
-                .send({ lang: 'en' })
-                .expect(401);
-        });
     });
 
     // ─── F. Account Deletion flow ───

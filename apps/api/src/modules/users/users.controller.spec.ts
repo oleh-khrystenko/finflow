@@ -15,12 +15,10 @@ const mockUser = {
     passwordHash: '$2b$10$hash',
     deletedAt: null as Date | null,
     accountDeletionRequestedAt: null as Date | null,
-    preferredLang: 'uk',
 };
 
 const mockUsersService = {
     updateProfile: jest.fn(),
-    updateLang: jest.fn(),
     softDelete: jest.fn(),
     restore: jest.fn(),
     setDeletionRequested: jest.fn(),
@@ -62,7 +60,6 @@ describe('UsersController', () => {
                     hasPassword: true,
                     deletedAt: null,
                     accountDeletionRequestedAt: null,
-                    preferredLang: 'uk',
                     billing: null,
                 },
             });
@@ -111,30 +108,6 @@ describe('UsersController', () => {
             expect(result.data.profile).toEqual({
                 name: 'New Name',
                 avatar: 'https://new.url',
-            });
-        });
-    });
-
-    describe('PATCH /users/me/lang', () => {
-        it('should call updateLang and return LANG_UPDATED', async () => {
-            mockUsersService.updateLang.mockResolvedValue(undefined);
-
-            const result = await controller.updateLang(
-                mockUser as any,
-                {
-                    lang: 'en',
-                } as any
-            );
-
-            expect(mockUsersService.updateLang).toHaveBeenCalledWith(
-                '507f1f77bcf86cd799439011',
-                'en'
-            );
-            expect(result).toEqual({
-                data: {
-                    code: RESPONSE_CODE.LANG_UPDATED,
-                    message: 'Language updated',
-                },
             });
         });
     });
@@ -200,7 +173,7 @@ describe('UsersController', () => {
             );
             expect(
                 mockAuthService.sendDeletionConfirmationEmail
-            ).toHaveBeenCalledWith('test@gmail.com', 'uk');
+            ).toHaveBeenCalledWith('test@gmail.com');
             expect(res.clearCookie).toHaveBeenCalledWith('bid_refresh', {
                 path: '/',
             });

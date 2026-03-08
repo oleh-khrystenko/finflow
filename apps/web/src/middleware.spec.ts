@@ -12,19 +12,6 @@ jest.mock('next/server', () => ({
     },
 }));
 
-jest.mock('next-intl/middleware', () => {
-    return jest.fn(() => {
-        return () => ({ status: 200, headers: new Map() });
-    });
-});
-
-jest.mock('./i18n/routing', () => ({
-    routing: {
-        locales: ['uk', 'en'],
-        defaultLocale: 'uk',
-    },
-}));
-
 import middleware, { config } from './middleware';
 
 function createMockRequest(
@@ -52,36 +39,36 @@ describe('middleware', () => {
     });
 
     describe('protected paths', () => {
-        it('redirects /uk/profile to signin when no cookie', () => {
-            const req = createMockRequest('/uk/profile');
+        it('redirects /profile to signin when no cookie', () => {
+            const req = createMockRequest('/profile');
             const response = middleware(req);
 
             expect(response.status).toBe(307);
             expect(mockRedirect).toHaveBeenCalled();
             const url: URL = mockRedirect.mock.calls[0][0];
-            expect(url.pathname).toBe('/uk/auth/signin');
+            expect(url.pathname).toBe('/auth/signin');
         });
 
-        it('redirects /en/profile to signin with correct locale', () => {
-            const req = createMockRequest('/en/profile');
+        it('redirects /pay to signin when no cookie', () => {
+            const req = createMockRequest('/pay');
             const response = middleware(req);
 
             expect(response.status).toBe(307);
             const url: URL = mockRedirect.mock.calls[0][0];
-            expect(url.pathname).toBe('/en/auth/signin');
+            expect(url.pathname).toBe('/auth/signin');
         });
 
-        it('redirects /uk/pay to signin when no cookie', () => {
-            const req = createMockRequest('/uk/pay');
+        it('redirects /billing to signin when no cookie', () => {
+            const req = createMockRequest('/billing');
             const response = middleware(req);
 
             expect(response.status).toBe(307);
             const url: URL = mockRedirect.mock.calls[0][0];
-            expect(url.pathname).toBe('/uk/auth/signin');
+            expect(url.pathname).toBe('/auth/signin');
         });
 
         it('passes through protected path when cookie exists', () => {
-            const req = createMockRequest('/uk/profile', {
+            const req = createMockRequest('/profile', {
                 bid_refresh: 'some-token',
             });
             const response = middleware(req);
@@ -92,19 +79,19 @@ describe('middleware', () => {
     });
 
     describe('auth paths', () => {
-        it('redirects /uk/auth/signin to profile when cookie exists', () => {
-            const req = createMockRequest('/uk/auth/signin', {
+        it('redirects /auth/signin to profile when cookie exists', () => {
+            const req = createMockRequest('/auth/signin', {
                 bid_refresh: 'some-token',
             });
             const response = middleware(req);
 
             expect(response.status).toBe(307);
             const url: URL = mockRedirect.mock.calls[0][0];
-            expect(url.pathname).toBe('/uk/profile');
+            expect(url.pathname).toBe('/profile');
         });
 
-        it('passes through /uk/auth/signin when no cookie', () => {
-            const req = createMockRequest('/uk/auth/signin');
+        it('passes through /auth/signin when no cookie', () => {
+            const req = createMockRequest('/auth/signin');
             const response = middleware(req);
 
             expect(response.status).toBe(200);
@@ -113,35 +100,9 @@ describe('middleware', () => {
 
     describe('public paths', () => {
         it('passes through public paths', () => {
-            const req = createMockRequest('/uk');
+            const req = createMockRequest('/');
             const response = middleware(req);
 
-            expect(response.status).toBe(200);
-        });
-    });
-
-    describe('locale stripping', () => {
-        it('strips /uk prefix to check /profile as protected', () => {
-            const req = createMockRequest('/uk/profile');
-            const response = middleware(req);
-
-            expect(response.status).toBe(307);
-        });
-
-        it('strips /en prefix to check /profile as protected', () => {
-            const req = createMockRequest('/en/profile');
-            const response = middleware(req);
-
-            expect(response.status).toBe(307);
-        });
-
-        it('path without locale falls through to intlMiddleware (no locale match)', () => {
-            // /profile does not match locale pattern ^/(uk|en)(/...)?$
-            // so stripLocale returns '/' which is not protected
-            const req = createMockRequest('/profile');
-            const response = middleware(req);
-
-            // intlMiddleware handles locale redirect
             expect(response.status).toBe(200);
         });
     });

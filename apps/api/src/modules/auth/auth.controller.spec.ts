@@ -20,7 +20,6 @@ const mockUser = {
     credits: { balance: 0, freeReportUsed: false },
     passwordHash: '$2b$10$hash',
     deletedAt: null as Date | null,
-    preferredLang: 'uk',
 };
 
 const mockAuthService = {

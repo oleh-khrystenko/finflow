@@ -1,6 +1,6 @@
 # FinFlow
 
-> Production-ready SaaS-бойлерплейт та живий лендінг агенції — ядро для швидкого запуску web-додатків (auth, payments, i18n, theming) з модульною архітектурою Core/Agency. При форку видаляється agency модуль, і розробка клієнтського MVP починається поверх готового ядра.
+> Production-ready SaaS-бойлерплейт та живий лендінг агенції — ядро для швидкого запуску web-додатків (auth, payments, theming) з модульною архітектурою Core/Agency. При форку видаляється agency модуль, і розробка клієнтського MVP починається поверх готового ядра.
 
 <!-- MANUAL:START -->
 # Rules
@@ -34,7 +34,6 @@ Full index: [docs/conventions/README.md](docs/conventions/README.md)
 | Мова           | TypeScript (strict mode)      | 5.9.3                                 |
 | Styling        | TailwindCSS 4.x + CVA        | 4.1.16                                |
 | State          | Zustand                       | 5.0.11                                |
-| i18n           | next-intl                     | 4.4.0                                 |
 | Theme          | next-themes                   | 0.4.6                                 |
 | Auth           | Passport + JWT + Google OAuth + bcrypt | passport 0.7, @nestjs/jwt 11.0, bcrypt 6.0 |
 | Validation     | Zod + nestjs-zod              | zod 4.3.6, nestjs-zod 5.1.1           |
@@ -56,8 +55,8 @@ Turborepo monorepo з 2 apps + 1 shared package. Два шари: **Core** (auth
 Auth (Google OAuth + Magic Link + Password) повністю реалізований, включно з profile management, account soft-deletion з 30-day grace period, brute force protection. Payments (Stripe subscription + one-off credit packs + webhooks + billing portal) повністю реалізований. Reports, Storage -- skeleton. Agency -- scaffold (порожні директорії, готові для розширення).
 
 - **apps/api** -- NestJS REST API, модульна архітектура, MongoDB через Mongoose, JWT auth, Redis для magic links, token storage, rate limiting, brute force tracking, Stripe webhooks (subscriptions + one-off)
-- **apps/web** -- Next.js SSR/CSR з Feature-Sliced Design, i18n, light/dark/system theme (next-themes), auth pages, profile management, billing page (subscriptions + credit packs). Dev: `next dev --turbopack`. Build: `output: 'standalone'` (Docker). API proxy: `/api/*` -> backend via `next.config.ts` rewrites.
-- **packages/types** -- Shared Zod-схеми, типи, constants, contracts, validation, enums. Entry: `src/index.ts` -> 5 modules (constants, enums, entities, contracts, validation). Окремий entry `src/agency.ts` для agency-специфічних типів. Build: CJS to `dist/` via `tsconfig.build.json`.
+- **apps/web** -- Next.js SSR/CSR з Feature-Sliced Design, light/dark/system theme (next-themes), auth pages, profile management, billing page (subscriptions + credit packs). Dev: `next dev --turbopack`. Build: `output: 'standalone'` (Docker). API proxy: `/api/*` -> backend via `next.config.ts` rewrites.
+- **packages/types** -- Shared Zod-схеми, типи, contracts, validation, enums. Entry: `src/index.ts` -> 4 modules (enums, entities, contracts, validation). Окремий entry `src/agency.ts` для agency-специфічних типів. Build: CJS to `dist/` via `tsconfig.build.json`.
 
 ## Project Structure
 
@@ -83,17 +82,17 @@ finflow/
 │   │   │       │   ├── auth.module.ts    # PassportModule, JwtModule(1h), UsersModule(forwardRef), OnModuleInit(ping Redis), OnModuleDestroy(close Redis)
 │   │   │       │   ├── auth.controller.ts # 12 endpoints: Google OAuth, magic-link, password, refresh, logout
 │   │   │       │   ├── auth.service.ts   # Tokens, magic links, rate limiting, brute force, password, rotation
-│   │   │       │   ├── services/email.service.ts          # Resend: 4 email templates x 2 langs (HTML with FinFlow branding)
+│   │   │       │   ├── services/email.service.ts          # Resend: 4 email templates (Ukrainian, HTML with FinFlow branding)
 │   │   │       │   ├── strategies/jwt.strategy.ts         # fromAuthHeaderAsBearerToken -> findById
 │   │   │       │   ├── strategies/google.strategy.ts      # scope:[email,profile], state:false, verifies email
 │   │   │       │   └── dto/              # 7 Zod DTOs (check-email, send-magic-link, login-password, set/change/verify-password, verify-magic-link)
 │   │   │       ├── users/                # Повністю реалізований
 │   │   │       │   ├── users.module.ts
-│   │   │       │   ├── users.controller.ts  # 6 endpoints: getMe, updateProfile, updateLang, deleteAccount, confirmDelete, restore
+│   │   │       │   ├── users.controller.ts  # 5 endpoints: getMe, updateProfile, deleteAccount, confirmDelete, restore
 │   │   │       │   ├── users.service.ts     # CRUD, findOrCreate, profile, soft-delete, restore, credits (addCredits, deductCredit, hasCredit)
 │   │   │       │   ├── cleanup.service.ts   # @Cron(EVERY_DAY_AT_3AM) hard-delete expired accounts + revokeAllUserTokens
 │   │   │       │   ├── schemas/user.schema.ts  # Mongoose: email, provider, profile, credits, passwordHash, deletedAt, accountDeletionRequestedAt, billing
-│   │   │       │   └── dto/              # update-profile.dto.ts, update-lang.dto.ts
+│   │   │       │   └── dto/              # update-profile.dto.ts
 │   │   │       ├── payments/             # Повністю реалізований (subscription + one-off)
 │   │   │       │   ├── payments.module.ts
 │   │   │       │   ├── payments.controller.ts  # 3 endpoints: checkout-session, portal-session, webhook/:provider
@@ -115,37 +114,35 @@ finflow/
 │   │       └── jest-e2e.json
 │   │
 │   └── web/                              # Next.js frontend
-│       ├── next.config.ts                # standalone output, /api/* proxy to backend, Google images allowed, next-intl plugin
+│       ├── next.config.ts                # standalone output, /api/* proxy to backend, Google images allowed
 │       ├── postcss.config.mjs            # @tailwindcss/postcss
 │       ├── eslint.config.mjs             # next/core-web-vitals + typescript, bans agency imports from core modules
 │       ├── src/
 │       │   ├── app/
 │       │   │   ├── providers.tsx         # next-themes ThemeProvider (attribute:class, storageKey:theme, defaultTheme:system)
 │       │   │   ├── globals.css           # @import tailwindcss + 5 style files
-│       │   │   └── [locale]/
-│       │   │       ├── layout.tsx        # Providers, NextIntlClientProvider, AuthInitializer, Header, Mulish font (Cyrillic+Latin)
-│       │   │       ├── page.tsx          # Welcome page (public), SEO via fetchMetadata()
-│       │   │       ├── (agency)/         # Scaffold (порожній, для agency-специфічних сторінок)
-│       │   │       ├── auth/
-│       │   │       │   ├── signin/page.tsx   # Email -> password/magic-link decision (450 lines, 6-state machine)
-│       │   │       │   ├── callback/page.tsx # OAuth callback: refreshToken -> getMe -> /profile; handles ?account_deleted=true
-│       │   │       │   └── verify/page.tsx   # Magic link verification (Suspense, 4 purposes, 4 status states)
-│       │   │       └── (protected)/
-│       │   │           ├── layout.tsx        # AuthGuard wrapper
-│       │   │           ├── profile/page.tsx  # Profile (form, security, danger zone); ?mode=new|set-password|reset-password
-│       │   │           └── billing/
-│       │   │               ├── page.tsx      # Subscription + credit packs UI (feature flags control visibility)
-│       │   │               ├── layout.tsx    # SEO metadata
-│       │   │               ├── success/page.tsx  # Post-checkout: getMe -> update store -> toast -> /billing
-│       │   │               └── cancel/page.tsx   # Cancel: toast -> /billing
+│       │   │   ├── layout.tsx            # Providers, AuthInitializer, Header, Mulish font (Cyrillic+Latin), lang="uk"
+│       │   │   ├── page.tsx              # Welcome page (public), SEO via fetchMetadata()
+│       │   │   ├── (agency)/             # Scaffold (порожній, для agency-специфічних сторінок)
+│       │   │   ├── auth/
+│       │   │   │   ├── signin/page.tsx   # Email -> password/magic-link decision (6-state machine)
+│       │   │   │   ├── callback/page.tsx # OAuth callback: refreshToken -> getMe -> /profile; handles ?account_deleted=true
+│       │   │   │   └── verify/page.tsx   # Magic link verification (Suspense, 4 purposes, 4 status states)
+│       │   │   └── (protected)/
+│       │   │       ├── layout.tsx        # AuthGuard wrapper
+│       │   │       ├── profile/page.tsx  # Profile (form, security, danger zone); ?mode=new|set-password|reset-password
+│       │   │       └── billing/
+│       │   │           ├── page.tsx      # Subscription + credit packs UI (feature flags control visibility)
+│       │   │           ├── layout.tsx    # SEO metadata
+│       │   │           ├── success/page.tsx  # Post-checkout: getMe -> update store -> toast -> /billing
+│       │   │           └── cancel/page.tsx   # Cancel: toast -> /billing
 │       │   ├── entities/
 │       │   │   ├── brand/Logo.tsx        # "FinFlow" text logo (text-5xl, bold, primary)
 │       │   │   └── agency/              # Scaffold (порожній)
 │       │   ├── features/
 │       │   │   ├── auth/                 # AuthInitializer (silent refresh, skips /auth/callback & /auth/verify), AuthGuard
-│       │   │   ├── change-lang/          # Language switcher (country-flag-icons, UiSelect, updates URL + backend pref)
 │       │   │   ├── change-theme/         # Theme toggle (3 modes: Light/System/Dark, lucide icons)
-│       │   │   ├── profile/              # ProfileForm (name/avatar/lang), SecuritySection (set/change/delete pwd), DangerZone (60s cooldown), DeleteAccountModal
+│       │   │   ├── profile/              # ProfileForm (name/avatar), SecuritySection (set/change/delete pwd), DangerZone (60s cooldown), DeleteAccountModal
 │       │   │   └── agency/              # Scaffold (порожній)
 │       │   ├── widgets/
 │       │   │   ├── header/              # Sticky header: Logo + avatar/initials + credits badge + theme + lang + logout
@@ -153,30 +150,27 @@ finflow/
 │       │   ├── shared/
 │       │   │   ├── api/
 │       │   │   │   ├── client.ts         # Axios + 401 auto-refresh interceptor + in-memory token (closure)
-│       │   │   │   ├── auth.ts           # 16 auth API functions
+│       │   │   │   ├── auth.ts           # 15 auth API functions
 │       │   │   │   ├── payments.ts       # createSubscriptionCheckout, createOneOffCheckout, createPortalSession
-│       │   │   │   ├── mapApiCode.ts     # ResponseCode -> i18n key mapping (notifications.{module}.{code} -> errors.generic.unknown)
+│       │   │   │   ├── mapApiCode.ts     # ResponseCode -> Ukrainian message mapping (MESSAGES dict)
 │       │   │   │   └── index.ts
 │       │   │   ├── config/env.ts         # Fail-fast ENV + payment feature flags
 │       │   │   ├── ui/                   # UiButton (polymorphic: button/link/a), UiInput (outlined/filled), UiSelect (Headless Listbox), UiSwitch, UiSpinner
 │       │   │   ├── lib/utils.ts          # composeClasses() helper
 │       │   │   ├── icons/GoogleIcon.tsx   # Google OAuth SVG icon (official colors)
-│       │   │   ├── seo/metadata.ts       # fetchMetadata(): canonical URLs, hrefLang alternates (x-default, uk-ua, en-ua)
-│       │   │   ├── types/settings.ts     # THEME enum, Theme, PageParams, MetaProps
+│       │   │   ├── seo/metadata.ts       # fetchMetadata(): canonical URLs, page meta
+│       │   │   ├── types/settings.ts     # THEME enum, Theme
 │       │   │   ├── fonts/               # mulish-cyrillic.woff2, mulish-latin.woff2
 │       │   │   └── styles/              # themes.css (CSS vars light/dark), settings.css (.container), custom-variants.css, animations.css, scrollbar.css
 │       │   ├── stores/auth/authStore.ts  # user, isAuthenticated, isLoading (Zustand, initial isLoading=true)
-│       │   ├── i18n/                     # routing.ts (locales:['uk','en'], default:'uk'), request.ts (server-side config)
-│       │   └── middleware.ts             # Protects /profile,/pay,/billing; redirects /auth/signin if authenticated; i18n routing
-│       └── messages/                     # uk.json, en.json (namespaces: welcome_page, auth_page, notifications, errors, profile_page, billing_page, components, delete_account_modal)
+│       │   └── middleware.ts             # Protects /profile,/pay,/billing; redirects /auth/signin if authenticated
 │
 ├── packages/
 │   └── types/                            # @finflow/types
 │       └── src/
-│           ├── index.ts                  # Re-exports all 5 modules (constants, enums, entities, contracts, validation)
+│           ├── index.ts                  # Re-exports all 4 modules (enums, entities, contracts, validation)
 │           ├── agency.ts                 # Окремий entry point для agency типів -> ./agency/index
 │           ├── agency/index.ts           # Scaffold (порожній export)
-│           ├── constants/lang.ts         # LANG { UK:'uk', EN:'en' }, Lang type
 │           ├── enums/
 │           │   ├── response-code.ts      # PRIMARY: RESPONSE_CODE (17 codes), RESPONSE_CODE_TYPE mapping
 │           │   ├── response-type.ts      # RESPONSE_TYPE { SUCCESS, ERROR }
@@ -220,7 +214,6 @@ Zod: `packages/types/src/entities/user.ts`
 | passwordHash                  | string \| null                           | bcrypt hash пароля           |
 | deletedAt                     | Date \| null                             | Soft-delete timestamp        |
 | accountDeletionRequestedAt    | Date \| null                             | Коли запитано видалення      |
-| preferredLang                 | string                                   | Мова (default: 'uk')        |
 | lastLoginAt                   | Date (optional)                          | Останній логін               |
 | billing                       | BillingInfo \| null                      | Дані підписки Stripe         |
 | createdAt, updatedAt          | Date                                     | Timestamps (auto)            |
@@ -269,7 +262,6 @@ Zod: `packages/types/src/entities/user.ts`
 
 | Модуль                   | Зміст                                                                              |
 | ------------------------ | ---------------------------------------------------------------------------------- |
-| `constants/lang.ts`      | `LANG` object (as const), `Lang` type                                              |
 | `enums/error-code.ts`    | DEPRECATED. Kept for AllExceptionsFilter backward compat                           |
 | `enums/response-code.ts` | Primary. `RESPONSE_CODE` (17 codes): auth/users success, payments errors, generic errors. `RESPONSE_CODE_TYPE` mapping |
 | `enums/response-type.ts` | `RESPONSE_TYPE = { SUCCESS, ERROR }`, `ResponseType` type                          |
@@ -277,7 +269,7 @@ Zod: `packages/types/src/entities/user.ts`
 | `contracts/api.ts`       | `ApiErrorSchema`, `ApiResponse<T>`, `ApiMessageResponse`                           |
 | `contracts/auth.ts`      | `MAGIC_LINK_PURPOSE` (4 values: LOGIN, REGISTER, RESET_PASSWORD, DELETE_ACCOUNT), 10 schemas |
 | `contracts/payments.ts`  | `PAYMENT_TYPE` (SUBSCRIPTION, ONE_OFF), `CREDIT_PACK_CONFIG` (credits_5/10/20), `SUBSCRIPTION_STATUS` (7), `BILLING_EVENT_TYPE` (4), `CreateCheckoutSessionSchema` (discriminated union), `UserBillingSchema`, `BillingWebhookEventSchema` |
-| `contracts/users.ts`     | `UpdateLangSchema`, `UpdateProfileSchema`                                          |
+| `contracts/users.ts`     | `UpdateProfileSchema`                                                              |
 | `validation/common.ts`   | `emailSchema`, `passwordSchema` (min 8), `objectIdSchema` (24 hex)                |
 | `agency.ts`              | Окремий entry point (`@finflow/types/agency`), scaffold (порожній export)        |
 
@@ -322,20 +314,18 @@ AppModule (root)
 ### Frontend (apps/web)
 
 ```
-layout.tsx ([locale])
+layout.tsx
 ├── Providers (next-themes ThemeProvider)
-├── NextIntlClientProvider (i18n)
 ├── AuthInitializer (silent token refresh, skips /auth/callback & /auth/verify)
-├── Header -> Logo, avatar/initials, credits badge, Logout, ChangeTheme(dynamic ssr:false), ChangeLang
+├── Header -> Logo, avatar/initials, credits badge, Logout, ChangeTheme(dynamic ssr:false)
 └── {children} -- pages
 
 middleware.ts
-├── i18n (createIntlMiddleware)
 ├── Protected: /profile, /pay, /billing -> redirect if no bid_refresh cookie
 └── Auth: /auth/signin -> redirect to /profile if bid_refresh exists
 ```
 
-**Agency scaffolds (порожні):** `app/[locale]/(agency)/`, `features/agency/`, `entities/agency/`, `widgets/agency/`
+**Agency scaffolds (порожні):** `app/(agency)/`, `features/agency/`, `entities/agency/`, `widgets/agency/`
 
 ## Key Patterns
 
@@ -463,15 +453,14 @@ StripeService handles 4 event types: `checkout.session.completed`/`async_payment
 - **Token family**: `refresh_family:{userId}` -- Redis Set для масової revoke
 - **Token TTL**: Access 1min (test) / 1h (prod), Refresh 2min (test) / 7d (prod)
 
-### i18n -- API code -> frontend message
+### API code -> frontend message
 
 ```
 API response: { data: { code: 'MAGIC_LINK_SENT', message: 'Magic link sent' } }
                                                   ^^^^^^^^ English, for devs only
-Frontend: getApiMessageKey('MAGIC_LINK_SENT', 'auth')
-  -> 'notifications.auth.magic_link_sent'  (if success code)
-  -> 'errors.auth.magic_link_sent'         (if error code)
-  -> 'errors.generic.unknown'              (final fallback)
+Frontend: getApiMessage('MAGIC_LINK_SENT')
+  -> 'Посилання надіслано на вашу пошту'  (direct Ukrainian string)
+  -> fallback: 'Сталася помилка. Спробуйте пізніше'
 ```
 
 ## API Overview
@@ -501,7 +490,6 @@ Prefix: `/api`. Rate limit: 60 req/60s (ThrottlerGuard global).
 | ------ | ----------------------------------- | -------------- | ----------------------------------------------------- |
 | GET    | `/api/users/me`                     | JwtActiveGuard | Поточний користувач (з billing, credits)              |
 | PATCH  | `/api/users/me`                     | JwtActiveGuard | Оновити профіль (name, avatar)                        |
-| PATCH  | `/api/users/me/lang`                | JwtActiveGuard | Оновити мову                                          |
 | POST   | `/api/users/account/delete`         | JwtActiveGuard | Ініціювати видалення (password або magic link)         |
 | POST   | `/api/users/account/delete/confirm` | JwtActiveGuard | Підтвердити видалення (soft-delete + 30-day grace)    |
 | POST   | `/api/users/account/restore`        | JwtAuthGuard   | Відновити акаунт (JwtAuthGuard -- дозволяє deleted)   |
@@ -622,7 +610,7 @@ pnpm --filter @finflow/types dev                     # Watch mode
 - Cookie для refresh token: `bid_refresh`, httpOnly, secure (prod), sameSite=lax, path=/, maxAge=7d
 - Frontend: Feature-Sliced Design (`app/`, `features/`, `entities/`, `widgets/`, `shared/`)
 - UI компоненти: `Component.tsx` + `types.ts` + `index.ts` структура; UiButton polymorphic (button/link/a)
-- Locales: `uk` (default), `en`; routing через next-intl `defineRouting()`
+- Мова: тільки українська, тексти інлайнені в компоненти, без i18n бібліотек
 - Theme: next-themes (attribute: class, storageKey: theme, defaultTheme: system, disableTransitionOnChange: true)
 - **Zod = single source of truth**: схеми в `packages/types`, types через `z.infer`, валідація на API і Web
 - DTOs на API: `createZodDto(ZodSchema)` з `nestjs-zod` (НЕ class-validator)
@@ -632,12 +620,11 @@ pnpm --filter @finflow/types dev                     # Watch mode
 - Zustand stores без Provider -- працюють напряму; initial `isLoading=true`
 - Prettier: singleQuote, tabWidth 4, trailingComma es5, semi true, printWidth 80
 - Web: prettier-plugin-tailwindcss для сортування класів
-- i18n message keys: `{page}_page.{section}.{key}` або `components.{component}.{key}`
-- i18n notifications: `notifications.{module}.{code}`, errors: `errors.{module}.{code}`, fallback: `errors.generic.{code}`
+- API code mapping: `getApiMessage(code)` повертає українське повідомлення напряму (словник в `mapApiCode.ts`)
 - Web path aliases: `@/*` -> `./src/*`, `@finflow/types` -> `../../packages/types/src/index.ts`
 - Server components за замовчуванням, `'use client'` лише де потрібно
 - **Tone convention**: classic-polite (формальне "ви", без емодзі, 1-2 речення, минулий час для success)
-- **i18n convention**: Backend тільки англійська (code + message), frontend маппить code -> i18n key; emails -- виняток (user language)
+- **Language convention**: Backend тільки англійська (code + message), frontend маппить code -> українське повідомлення; emails -- українською
 - Password hashing: bcrypt з salt rounds 10
 - `rawBody: true` в `main.ts` -- критично для Stripe webhook signature verification
 - Next.js: dev з `--turbopack`, build з `output: 'standalone'`, API proxy через rewrites
@@ -706,17 +693,17 @@ In-memory Map симулює Redis (SET, GET, GETDEL, INCR, EXPIRE, SADD, SMEMBE
 
 ### Signin page -- state machine
 
-Файл: `apps/web/src/app/[locale]/auth/signin/page.tsx` (450 lines)
+Файл: `apps/web/src/app/auth/signin/page.tsx`
 States: `email | loading | password | magic-link-sent | recovery | error`. Retry-after header parsing для rate limits, progressive lockout countdown, grace period recovery for deleted accounts.
 
 ### Profile page -- modes via query param
 
-Файл: `apps/web/src/app/[locale]/(protected)/profile/page.tsx`
+Файл: `apps/web/src/app/(protected)/profile/page.tsx`
 `?mode=new` -- new user onboarding (editable form, name required). `?mode=set-password` -- set password flow. `?mode=reset-password` -- reset via magic link. `mode=null` -- default view з SecuritySection + DangerZone.
 
 ### Billing page -- conditional sections
 
-Файл: `apps/web/src/app/[locale]/(protected)/billing/page.tsx`
+Файл: `apps/web/src/app/(protected)/billing/page.tsx`
 Two independent sections controlled by feature flags: subscription (subscribe/manage/cancel) and credits (pack purchase with `CREDIT_PACK_CONFIG` from types). Each section renders only when its flag is enabled.
 
 ### test-setup.ts -- Stripe env for unit tests

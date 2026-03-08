@@ -105,12 +105,6 @@ export class UsersService {
         return free !== null;
     }
 
-    async updateLang(userId: string, lang: string): Promise<void> {
-        await this.userModel
-            .findByIdAndUpdate(userId, { preferredLang: lang })
-            .exec();
-    }
-
     async setPasswordHash(userId: string, hash: string): Promise<void> {
         await this.userModel.findByIdAndUpdate(userId, { passwordHash: hash });
     }
@@ -141,13 +135,11 @@ export class UsersService {
 
     async updateProfile(
         userId: string,
-        data: { name?: string; avatar?: string; preferredLang?: string }
+        data: { name?: string; avatar?: string }
     ): Promise<UserDocument | null> {
         const update: Record<string, unknown> = {};
         if (data.name !== undefined) update['profile.name'] = data.name;
         if (data.avatar !== undefined) update['profile.avatar'] = data.avatar;
-        if (data.preferredLang !== undefined)
-            update.preferredLang = data.preferredLang;
         return this.userModel.findByIdAndUpdate(userId, update, { new: true });
     }
 

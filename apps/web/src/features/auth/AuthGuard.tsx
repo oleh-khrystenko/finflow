@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import UiFullPageLoader from '@/shared/ui/UiFullPageLoader';
 import { useAuthStore } from '@/stores/auth';
@@ -12,15 +12,14 @@ interface AuthGuardProps {
 
 const AuthGuard = ({ children }: AuthGuardProps) => {
     const router = useRouter();
-    const { locale } = useParams<{ locale: string }>();
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const isLoading = useAuthStore((s) => s.isLoading);
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            router.replace(`/${locale}/auth/signin`);
+            router.replace('/auth/signin');
         }
-    }, [isLoading, isAuthenticated, router, locale]);
+    }, [isLoading, isAuthenticated, router]);
 
     if (isLoading) {
         return <UiFullPageLoader />;

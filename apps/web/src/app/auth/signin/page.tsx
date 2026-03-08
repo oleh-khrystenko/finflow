@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
 import { Mail } from 'lucide-react';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
@@ -18,7 +17,7 @@ import {
     sendMagicLink,
     restoreAccount,
     getMe,
-    getApiMessageKey,
+    getApiMessage,
 } from '@/shared/api';
 import { useAuthStore } from '@/stores/auth';
 
@@ -31,10 +30,6 @@ type SigninState =
     | 'error';
 
 export default function SigninPage() {
-    const t = useTranslations('auth_page.signin');
-    const tRecovery = useTranslations('auth_page.recovery');
-    const tErrors = useTranslations();
-    const locale = useLocale();
     const router = useRouter();
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const setUser = useAuthStore((s) => s.setUser);
@@ -51,11 +46,11 @@ export default function SigninPage() {
 
     useEffect(() => {
         if (isAuthenticated) {
-            router.replace(`/${locale}/profile`);
+            router.replace('/profile');
         }
-    }, [isAuthenticated, locale, router]);
+    }, [isAuthenticated, router]);
 
-    const handleError = (err: unknown, fallbackKey?: string) => {
+    const handleError = (err: unknown) => {
         const code =
             err instanceof AxiosError
                 ? err.response?.data?.error?.code
@@ -69,13 +64,13 @@ export default function SigninPage() {
             const minutes = retryAfter
                 ? Math.ceil(Number(retryAfter) / 60)
                 : 15;
-            setErrorMessage(t('too_many_attempts', { minutes }));
-        } else if (code) {
             setErrorMessage(
-                tErrors(getApiMessageKey(code, fallbackKey ?? 'auth'))
+                `Забагато спроб. Спробуйте через ${minutes} хвилин або скористайтесь посиланням «Забули пароль?»`
             );
+        } else if (code) {
+            setErrorMessage(getApiMessage(code));
         } else {
-            setErrorMessage(t('error_generic'));
+            setErrorMessage('Щось пішло не так. Спробуйте ще раз');
         }
     };
 
@@ -91,7 +86,7 @@ export default function SigninPage() {
                 setState('password');
             } else {
                 const purpose = isNewUser ? 'register' : 'login';
-                await sendMagicLink(email, locale, purpose);
+                await sendMagicLink(email, purpose);
                 setState('magic-link-sent');
             }
         } catch (err) {
@@ -122,13 +117,13 @@ export default function SigninPage() {
                     )
                 );
 
-                setDeletedAt(deleted.toLocaleDateString(locale));
+                setDeletedAt(deleted.toLocaleDateString('uk-UA'));
                 setDeletedDaysLeft(daysLeft);
                 setState('recovery');
             } else {
                 const me = await getMe();
                 setUser(me);
-                router.push(`/${locale}/profile`);
+                router.push('/profile');
             }
         } catch (err) {
             setSubmitting(false);
@@ -141,7 +136,7 @@ export default function SigninPage() {
                 setShowMagicLinkSuggestion(true);
                 handleError(err);
             } else if (code === 'UNAUTHORIZED') {
-                setErrorMessage(t('invalid_credentials'));
+                setErrorMessage('Невірний email або пароль');
             } else {
                 handleError(err);
             }
@@ -151,11 +146,15 @@ export default function SigninPage() {
     const handleForgotPassword = async () => {
         setSubmitting(true);
         try {
-            await sendMagicLink(email, locale, 'reset-password');
-            toast.success(t('forgot_password_sent'));
+            await sendMagicLink(email, 'reset-password');
+            toast.success(
+                'Якщо акаунт з цією адресою існує, ми надіслали посилання для зміни пароля'
+            );
             setState('magic-link-sent');
         } catch {
-            toast.success(t('forgot_password_sent'));
+            toast.success(
+                'Якщо акаунт з цією адресою існує, ми надіслали посилання для зміни пароля'
+            );
             setState('magic-link-sent');
         } finally {
             setSubmitting(false);
@@ -166,10 +165,10 @@ export default function SigninPage() {
         setSubmitting(true);
         try {
             await restoreAccount();
-            toast.success(tRecovery('restored'));
+            toast.success('Акаунт відновлено!');
             const me = await getMe();
             setUser(me);
-            router.push(`/${locale}/profile`);
+            router.push('/profile');
         } catch (err) {
             setSubmitting(false);
             handleError(err);
@@ -180,7 +179,7 @@ export default function SigninPage() {
     const handleSendMagicLinkFromPassword = async () => {
         setSubmitting(true);
         try {
-            await sendMagicLink(email, locale, 'login');
+            await sendMagicLink(email, 'login');
             setState('magic-link-sent');
             setShowMagicLinkSuggestion(false);
         } catch {
@@ -204,12 +203,13 @@ export default function SigninPage() {
         <div className="text-center">
             <h1 className="text-text-primary text-3xl font-bold">
                 {state === 'recovery'
-                    ? tRecovery('title')
-                    : t('heading')}
+                    ? 'Акаунт деактивовано'
+                    : 'Вхід до FinFlow'}
             </h1>
             {state === 'email' && (
                 <p className="text-text-secondary mt-2">
-                    {t('subheading')}
+                    Запустіть свій SaaS швидше — auth, payments та теми з
+                    коробки
                 </p>
             )}
         </div>
@@ -221,7 +221,7 @@ export default function SigninPage() {
             <form onSubmit={handleEmailSubmit} className="space-y-4">
                 <UiInput
                     type="email"
-                    placeholder={t('email_placeholder')}
+                    placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -236,15 +236,13 @@ export default function SigninPage() {
                     className="w-full justify-center rounded-lg"
                     disabled={!email}
                 >
-                    {t('continue_button')}
+                    Продовжити
                 </UiButton>
             </form>
 
             <div className="flex items-center gap-4">
                 <div className="h-px flex-1 bg-border" />
-                <span className="text-text-secondary text-sm">
-                    {t('or_divider')}
-                </span>
+                <span className="text-text-secondary text-sm">або</span>
                 <div className="h-px flex-1 bg-border" />
             </div>
 
@@ -256,7 +254,7 @@ export default function SigninPage() {
                 className="w-full justify-center gap-3 rounded-lg border border-border bg-surface text-text-primary hover:bg-surface-hover"
                 IconLeft={GoogleIcon}
             >
-                {t('google_button')}
+                Увійти через Google
             </UiButton>
         </>
     );
@@ -286,12 +284,12 @@ export default function SigninPage() {
                     onClick={goBackToEmail}
                     className="text-primary absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium hover:underline"
                 >
-                    {t('change_email')}
+                    Змінити
                 </UiButton>
             </div>
 
             <UiPasswordInput
-                placeholder={t('password_placeholder')}
+                placeholder="Введіть пароль"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={errorMessage || undefined}
@@ -308,7 +306,7 @@ export default function SigninPage() {
                     disabled={submitting}
                     className="text-primary text-sm font-medium hover:underline"
                 >
-                    {t('forgot_password')}
+                    Забули пароль?
                 </UiButton>
             </div>
 
@@ -319,11 +317,7 @@ export default function SigninPage() {
                 className="w-full justify-center rounded-lg"
                 disabled={submitting || !password}
             >
-                {submitting ? (
-                    <UiSpinner size="sm" />
-                ) : (
-                    t('signin_button')
-                )}
+                {submitting ? <UiSpinner size="sm" /> : 'Увійти'}
             </UiButton>
 
             {showMagicLinkSuggestion && (
@@ -336,7 +330,7 @@ export default function SigninPage() {
                     onClick={handleSendMagicLinkFromPassword}
                     IconLeft={Mail}
                 >
-                    {t('login_via_email_link')}
+                    Увійти через email-посилання
                 </UiButton>
             )}
         </form>
@@ -348,10 +342,10 @@ export default function SigninPage() {
             <div className="rounded-lg border border-success/30 bg-success/10 p-6 text-center">
                 <Mail className="mx-auto mb-3 h-10 w-10 text-success" />
                 <h2 className="text-text-primary text-lg font-semibold">
-                    {t('magic_link_sent_title')}
+                    Перевірте пошту
                 </h2>
                 <p className="text-text-secondary mt-1 text-sm">
-                    {t('magic_link_sent_description', { email })}
+                    {`Ми надіслали посилання на ${email}. Перевірте папку "Вхідні" та натисніть на посилання для входу.`}
                 </p>
             </div>
 
@@ -361,7 +355,7 @@ export default function SigninPage() {
                 onClick={goBackToEmail}
                 className="text-primary mx-auto block text-sm font-medium hover:underline"
             >
-                &larr; {t('other_email')}
+                &larr; Інший email
             </UiButton>
         </div>
     );
@@ -370,10 +364,7 @@ export default function SigninPage() {
     const renderRecoveryState = () => (
         <div className="space-y-4">
             <p className="text-text-secondary text-center">
-                {tRecovery('description', {
-                    date: deletedAt ?? '',
-                    days: deletedDaysLeft,
-                })}
+                {`Ваш акаунт було видалено ${deletedAt ?? ''}. Він буде остаточно видалено через ${deletedDaysLeft} днів.`}
             </p>
 
             <UiButton
@@ -386,7 +377,7 @@ export default function SigninPage() {
                 {submitting ? (
                     <UiSpinner size="sm" />
                 ) : (
-                    tRecovery('restore_button')
+                    'Відновити акаунт'
                 )}
             </UiButton>
 
@@ -396,7 +387,7 @@ export default function SigninPage() {
                 className="w-full justify-center rounded-lg"
                 onClick={goBackToEmail}
             >
-                {tRecovery('logout_button')}
+                Вийти
             </UiButton>
         </div>
     );
@@ -406,7 +397,8 @@ export default function SigninPage() {
         <div className="space-y-4">
             <div className="rounded-lg border border-error/30 bg-error/10 p-6 text-center">
                 <p className="text-error text-sm font-medium">
-                    {errorMessage || t('error_generic')}
+                    {errorMessage ||
+                        'Щось пішло не так. Спробуйте ще раз'}
                 </p>
             </div>
 
@@ -416,7 +408,7 @@ export default function SigninPage() {
                 className="w-full justify-center rounded-lg"
                 onClick={goBackToEmail}
             >
-                {t('continue_button')}
+                Продовжити
             </UiButton>
         </div>
     );

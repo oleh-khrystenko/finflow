@@ -12,7 +12,6 @@ import { AuthGuard } from '@nestjs/passport';
 import {
     AuthResponse,
     CheckEmailResponse,
-    Lang,
     MAGIC_LINK_PURPOSE,
     RESPONSE_CODE,
     type ApiMessageResponse,
@@ -104,7 +103,6 @@ export class AuthController {
                     credits: user.credits,
                     hasPassword: !!user.passwordHash,
                     deletedAt: user.deletedAt ?? null,
-                    preferredLang: user.preferredLang as Lang,
                 },
                 accessToken,
                 ...(accountDeleted && { accountDeleted }),
@@ -159,7 +157,6 @@ export class AuthController {
                     credits: user.credits,
                     hasPassword: !!user.passwordHash,
                     deletedAt: user.deletedAt ?? null,
-                    preferredLang: user.preferredLang as Lang,
                 },
                 accessToken: tokens.accessToken,
                 purpose,

@@ -10,7 +10,6 @@ const mockUserDoc = (overrides = {}) => ({
     provider: { name: 'google', id: 'google-123' },
     profile: { name: 'John Doe', avatar: 'https://photo.url' },
     credits: { balance: 0, freeReportUsed: false },
-    preferredLang: 'uk',
     lastLoginAt: null as Date | null,
     save: jest.fn().mockReturnThis(),
     ...overrides,
@@ -355,21 +354,6 @@ describe('UsersService', () => {
         });
     });
 
-    describe('updateLang', () => {
-        it('should update preferredLang for user', async () => {
-            mockModel.findByIdAndUpdate.mockReturnValue({
-                exec: jest.fn().mockResolvedValue(undefined),
-            });
-
-            await service.updateLang('507f1f77bcf86cd799439011', 'en');
-
-            expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-                '507f1f77bcf86cd799439011',
-                { preferredLang: 'en' }
-            );
-        });
-    });
-
     describe('setPasswordHash', () => {
         it('should store password hash via findByIdAndUpdate', async () => {
             mockModel.findByIdAndUpdate.mockResolvedValue(undefined);
@@ -451,21 +435,6 @@ describe('UsersService', () => {
             expect(result).toBe(updated);
         });
 
-        it('should update only preferredLang when only lang provided', async () => {
-            const updated = mockUserDoc({ preferredLang: 'en' });
-            mockModel.findByIdAndUpdate.mockResolvedValue(updated);
-
-            await service.updateProfile('507f1f77bcf86cd799439011', {
-                preferredLang: 'en',
-            });
-
-            expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-                '507f1f77bcf86cd799439011',
-                { preferredLang: 'en' },
-                { new: true }
-            );
-        });
-
         it('should not include undefined fields in update', async () => {
             mockModel.findByIdAndUpdate.mockResolvedValue(mockUserDoc());
 
@@ -476,7 +445,6 @@ describe('UsersService', () => {
             const updateArg = mockModel.findByIdAndUpdate.mock.calls[0][1];
             expect(updateArg).toEqual({ 'profile.name': 'Only Name' });
             expect(updateArg).not.toHaveProperty('profile.avatar');
-            expect(updateArg).not.toHaveProperty('preferredLang');
         });
     });
 });

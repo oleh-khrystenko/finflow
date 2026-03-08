@@ -23,47 +23,35 @@
 4. **Дієслово у минулому часі** для success-підтверджень: "Звіт створено", "Посилання надіслано"
 5. **Без знаку оклику** в success-повідомленнях
 6. **Однакова структура** для однотипних повідомлень (створення, видалення, оновлення)
-7. **i18n**: кожне повідомлення має бути в `messages/uk.json` та `messages/en.json`, ніколи hardcoded
+7. **Тексти інлайнені** безпосередньо в компоненти як строкові літерали (українською)
 
 ## Examples (для поточного тону: classic-polite)
 
-| Контекст | Мова | Correct | Wrong |
-|----------|------|---------|-------|
-| Success (створення) | UK | Звіт успішно створено | Ура! Звіт створено! |
-| Success (створення) | EN | Report created successfully | Yay! Report created! |
-| Success (видалення) | UK | Запис видалено | Готово, видалили! |
-| Success (видалення) | EN | Record deleted | Done, deleted! |
-| Success (відправка) | UK | Посилання надіслано на вашу пошту | Лист полетів! |
-| Success (відправка) | EN | Link sent to your email | Email is on its way! |
-| Error (загальна) | UK | Не вдалося зберегти. Спробуйте пізніше | Ой, щось пішло не так |
-| Error (загальна) | EN | Failed to save. Please try again later | Oops, something went wrong |
-| Error (валідація) | UK | Введіть коректну email-адресу | Неправильний email!!! |
-| Error (валідація) | EN | Please enter a valid email address | Wrong email!!! |
-| Confirmation | UK | Ви впевнені, що хочете видалити цей звіт? | Точно видаляємо? |
-| Confirmation | EN | Are you sure you want to delete this report? | Delete it for real? |
-| Loading | UK | Завантаження... | Зачекай... |
-| Loading | EN | Loading... | Hold on... |
-| Empty state | UK | Звітів поки немає | Тут пусто :( |
-| Empty state | EN | No reports yet | Nothing here :( |
+| Контекст | Correct | Wrong |
+|----------|---------|-------|
+| Success (створення) | Звіт успішно створено | Ура! Звіт створено! |
+| Success (видалення) | Запис видалено | Готово, видалили! |
+| Success (відправка) | Посилання надіслано на вашу пошту | Лист полетів! |
+| Error (загальна) | Не вдалося зберегти. Спробуйте пізніше | Ой, щось пішло не так |
+| Error (валідація) | Введіть коректну email-адресу | Неправильний email!!! |
+| Confirmation | Ви впевнені, що хочете видалити цей звіт? | Точно видаляємо? |
+| Loading | Завантаження... | Зачекай... |
+| Empty state | Звітів поки немає | Тут пусто :( |
 
-## Patterns для i18n ключів
+## Patterns для API кодів
 
-Повідомлення зберігаються в `messages/{locale}.json` за патерном:
+Маппінг API кодів на повідомлення знаходиться в `shared/api/mapApiCode.ts`:
 
+```typescript
+const MESSAGES: Record<string, string> = {
+    MAGIC_LINK_SENT: 'Посилання надіслано на вашу пошту',
+    // ...
+};
 ```
-"notifications.{entity}.{action}": "Текст повідомлення"
-```
-
-Приклади:
-- `notifications.report.created` → "Звіт успішно створено"
-- `notifications.report.deleted` → "Звіт видалено"
-- `notifications.auth.magic_link_sent` → "Посилання надіслано на вашу пошту"
-- `errors.generic.save_failed` → "Не вдалося зберегти. Спробуйте пізніше"
-- `errors.validation.invalid_email` → "Введіть коректну email-адресу"
 
 ## Як змінити тон
 
 1. Зміни значення `TONE:` вище (наприклад, `casual-friendly`, `formal-corporate`)
 2. Онови таблицю прикладів відповідно до нового тону
-3. Онови `messages/uk.json` та `messages/en.json`
+3. Онови тексти в компонентах та `mapApiCode.ts`
 4. Правила з секції "Rules" залишаються незмінними

@@ -1,51 +1,42 @@
-import { getApiMessageKey } from './mapApiCode';
+import { getApiMessage } from './mapApiCode';
 
-describe('getApiMessageKey', () => {
-    it('returns notifications path for success code with module', () => {
-        expect(getApiMessageKey('MAGIC_LINK_SENT', 'auth')).toBe(
-            'notifications.auth.magic_link_sent'
+describe('getApiMessage', () => {
+    it('returns Ukrainian message for success codes', () => {
+        expect(getApiMessage('MAGIC_LINK_SENT')).toBe(
+            'Посилання надіслано на вашу пошту'
+        );
+        expect(getApiMessage('LOGGED_OUT')).toBe(
+            'Ви вийшли з акаунту'
+        );
+        expect(getApiMessage('ACCOUNT_DELETED')).toBe(
+            'Акаунт видалено'
         );
     });
 
-    it('returns notifications path for other success codes', () => {
-        expect(getApiMessageKey('LOGGED_OUT', 'auth')).toBe(
-            'notifications.auth.logged_out'
+    it('returns Ukrainian message for error codes', () => {
+        expect(getApiMessage('UNAUTHORIZED')).toBe(
+            'Час сесії вичерпано. Увійдіть знову'
         );
-        expect(getApiMessageKey('PASSWORD_SET', 'auth')).toBe(
-            'notifications.auth.password_set'
+        expect(getApiMessage('INVALID_MAGIC_LINK')).toBe(
+            'Посилання недійсне або прострочене'
         );
-        expect(getApiMessageKey('LANG_UPDATED', 'users')).toBe(
-            'notifications.users.lang_updated'
-        );
-    });
-
-    it('returns errors path for error code with module', () => {
-        expect(getApiMessageKey('UNAUTHORIZED', 'auth')).toBe(
-            'errors.auth.unauthorized'
+        expect(getApiMessage('RATE_LIMIT_EXCEEDED')).toBe(
+            'Забагато запитів. Спробуйте через 15 хвилин'
         );
     });
 
-    it('returns errors.generic path for error code without module', () => {
-        expect(getApiMessageKey('UNAUTHORIZED')).toBe(
-            'errors.generic.unauthorized'
+    it('returns fallback for unknown codes', () => {
+        expect(getApiMessage('UNKNOWN_CODE')).toBe(
+            'Сталася помилка. Спробуйте пізніше'
         );
     });
 
-    it('returns errors.generic path for unknown code without module', () => {
-        expect(getApiMessageKey('UNKNOWN_CODE')).toBe(
-            'errors.generic.unknown_code'
+    it('returns payment error messages', () => {
+        expect(getApiMessage('ALREADY_SUBSCRIBED')).toBe(
+            'У вас вже є активна підписка.'
         );
-    });
-
-    it('returns errors path for unknown code with module (no type mapping)', () => {
-        expect(getApiMessageKey('SOME_UNKNOWN', 'auth')).toBe(
-            'errors.auth.some_unknown'
-        );
-    });
-
-    it('lowercases the code in the key', () => {
-        expect(getApiMessageKey('RATE_LIMIT_EXCEEDED', 'auth')).toBe(
-            'errors.auth.rate_limit_exceeded'
+        expect(getApiMessage('SUBSCRIPTION_REQUIRED')).toBe(
+            'Для доступу потрібна активна підписка.'
         );
     });
 });

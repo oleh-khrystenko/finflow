@@ -2,9 +2,7 @@
 
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useLocale, useTranslations } from 'next-intl';
 import { LogOut } from 'lucide-react';
-import ChangeLang from '@/features/change-lang';
 
 const ChangeTheme = dynamic(() => import('@/features/change-theme'), {
     ssr: false,
@@ -15,8 +13,6 @@ import { logout } from '@/shared/api';
 import { useAuthStore } from '@/stores/auth';
 
 const Header = () => {
-    const t = useTranslations('components.header');
-    const locale = useLocale();
     const user = useAuthStore((s) => s.user);
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const isLoading = useAuthStore((s) => s.isLoading);
@@ -25,7 +21,7 @@ const Header = () => {
     const handleLogout = async () => {
         await logout();
         clearUser();
-        window.location.assign(`/${locale}`);
+        window.location.assign('/');
     };
 
     return (
@@ -33,7 +29,7 @@ const Header = () => {
             <div className="container flex items-center justify-between gap-6 py-4">
                 <UiButton
                     as="link"
-                    href={`/${locale}`}
+                    href="/"
                     variant="text"
                     size="md"
                     aria-label="Go to home page"
@@ -49,7 +45,7 @@ const Header = () => {
                         <>
                             <UiButton
                                 as="link"
-                                href={`/${locale}/profile`}
+                                href="/profile"
                                 variant="text"
                                 size="sm"
                                 className="flex items-center gap-2 p-0 transition-opacity hover:opacity-80"
@@ -73,7 +69,7 @@ const Header = () => {
                                         {user.profile.name || user.email}
                                     </span>
                                     <span className="bg-surface-hover text-text-primary rounded-full px-2 py-0.5 text-xs font-medium">
-                                        {user.credits.balance} {t('credits')}
+                                        {user.credits.balance} кредитів
                                     </span>
                                 </span>
                             </UiButton>
@@ -83,24 +79,23 @@ const Header = () => {
                                 onClick={() => {
                                     void handleLogout();
                                 }}
-                                aria-label={t('logout')}
+                                aria-label="Вийти"
                                 IconLeft={LogOut}
                             />
                         </>
                     ) : (
                         <UiButton
                             as="link"
-                            href={`/${locale}/auth/signin`}
+                            href="/auth/signin"
                             variant="filled"
                             size="sm"
                             className="rounded-lg"
                         >
-                            {t('signin')}
+                            Увійти
                         </UiButton>
                     )}
 
                     <ChangeTheme />
-                    <ChangeLang />
                 </div>
             </div>
         </header>

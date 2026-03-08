@@ -1,7 +1,6 @@
 import { resolve } from 'path';
 import { config } from 'dotenv';
 import type { NextConfig } from 'next';
-import createNextIntlPlugin from 'next-intl/plugin';
 
 // Load .env from monorepo root — single source of truth for all env vars.
 config({ path: resolve(__dirname, '../../.env') });
@@ -32,6 +31,4 @@ const nextConfig: NextConfig = {
     ],
 };
 
-const withNextIntl = createNextIntlPlugin();
-
-export default withNextIntl(nextConfig);
+export default nextConfig;

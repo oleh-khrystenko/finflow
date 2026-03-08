@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import type { UserProfile } from '@finflow/types';
 import { AxiosError } from 'axios';
@@ -24,8 +23,6 @@ interface SecuritySectionProps {
 }
 
 const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
-    const t = useTranslations('profile_page.security');
-
     const setUser = useAuthStore((s) => s.setUser);
 
     const [currentPwd, setCurrentPwd] = useState('');
@@ -55,12 +52,12 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
     const getHeading = () => {
         if (isSetMode) {
             return isPasswordOptional
-                ? t('set_password_optional')
-                : t('set_password');
+                ? 'Встановити пароль (опціонально)'
+                : 'Встановити пароль';
         }
-        if (isResetMode) return t('change_password');
-        if (isChangeMode) return t('change_password');
-        return t('set_password');
+        if (isResetMode) return 'Змінити пароль';
+        if (isChangeMode) return 'Змінити пароль';
+        return 'Встановити пароль';
     };
 
     const handleSetPassword = async (e: FormEvent) => {
@@ -70,10 +67,10 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
             await setPassword(newPwd);
             const me = await getMe();
             setUser(me);
-            toast.success(t('password_set'));
+            toast.success('Пароль встановлено');
             setNewPwd('');
         } catch {
-            toast.error(t('password_invalid'));
+            toast.error('Невірний пароль');
         } finally {
             setSubmitting(false);
         }
@@ -91,7 +88,9 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
             const me = await getMe();
             setUser(me);
             toast.success(
-                isResetMode ? t('password_set') : t('password_changed')
+                isResetMode
+                    ? 'Пароль встановлено'
+                    : 'Пароль змінено. Інші пристрої було відключено'
             );
             setCurrentPwd('');
             setNewPwd('');
@@ -101,9 +100,9 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                     ? err.response?.data?.error?.code
                     : undefined;
             if (code === 'UNAUTHORIZED') {
-                toast.error(t('password_invalid'));
+                toast.error('Невірний пароль');
             } else {
-                toast.error(t('password_invalid'));
+                toast.error('Невірний пароль');
             }
         } finally {
             setSubmitting(false);
@@ -116,10 +115,10 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
             await deletePassword();
             const me = await getMe();
             setUser(me);
-            toast.success(t('password_deleted'));
+            toast.success('Пароль видалено');
             setConfirmDelete(false);
         } catch {
-            toast.error(t('password_invalid'));
+            toast.error('Невірний пароль');
         } finally {
             setSubmitting(false);
         }
@@ -128,7 +127,7 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
     return (
         <section className="space-y-4">
             <h2 className="text-text-primary text-xl font-semibold">
-                {t('heading')}
+                Безпека
             </h2>
 
             {/* Set password mode */}
@@ -138,13 +137,13 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                         {getHeading()}
                     </p>
                     <UiPasswordInput
-                        placeholder={t('password_placeholder')}
+                        placeholder="Мінімум 8 символів"
                         value={newPwd}
                         onChange={(e) => setNewPwd(e.target.value)}
                         required={isPasswordRequired}
                         size="lg"
-                        showLabel={t('show_password')}
-                        hideLabel={t('hide_password')}
+                        showLabel="Показати пароль"
+                        hideLabel="Сховати пароль"
                     />
                     <UiButton
                         type="submit"
@@ -159,7 +158,7 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                         {submitting ? (
                             <UiSpinner size="sm" />
                         ) : (
-                            t('set_password')
+                            'Встановити пароль'
                         )}
                     </UiButton>
                 </form>
@@ -176,34 +175,34 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                     {isChangeMode && (
                         <div>
                             <label className="text-text-secondary mb-1 block text-sm">
-                                {t('current_password_label')}
+                                Поточний пароль
                             </label>
                             <UiPasswordInput
-                                placeholder={t('password_placeholder')}
+                                placeholder="Мінімум 8 символів"
                                 value={currentPwd}
                                 onChange={(e) =>
                                     setCurrentPwd(e.target.value)
                                 }
                                 required
                                 size="lg"
-                                showLabel={t('show_password')}
-                                hideLabel={t('hide_password')}
+                                showLabel="Показати пароль"
+                                hideLabel="Сховати пароль"
                             />
                         </div>
                     )}
 
                     <div>
                         <label className="text-text-secondary mb-1 block text-sm">
-                            {t('new_password_label')}
+                            Новий пароль
                         </label>
                         <UiPasswordInput
-                            placeholder={t('password_placeholder')}
+                            placeholder="Мінімум 8 символів"
                             value={newPwd}
                             onChange={(e) => setNewPwd(e.target.value)}
                             required
                             size="lg"
-                            showLabel={t('show_password')}
-                            hideLabel={t('hide_password')}
+                            showLabel="Показати пароль"
+                            hideLabel="Сховати пароль"
                         />
                     </div>
 
@@ -222,7 +221,7 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                             {submitting ? (
                                 <UiSpinner size="sm" />
                             ) : (
-                                t('change_password')
+                                'Змінити пароль'
                             )}
                         </UiButton>
 
@@ -235,7 +234,7 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                                 onClick={() => setConfirmDelete(true)}
                                 disabled={submitting}
                             >
-                                {t('delete_password')}
+                                Видалити пароль
                             </UiButton>
                         )}
                     </div>
@@ -246,7 +245,8 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
             {confirmDelete && (
                 <div className="rounded-lg border border-error/30 bg-error/10 p-4">
                     <p className="text-text-primary mb-3 text-sm">
-                        {t('delete_password_confirm')}
+                        Ви впевнені, що хочете видалити пароль? Ви зможете
+                        входити тільки через magic link або Google.
                     </p>
                     <div className="flex gap-3">
                         <UiButton
@@ -259,7 +259,7 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                             {submitting ? (
                                 <UiSpinner size="sm" />
                             ) : (
-                                t('delete_password')
+                                'Видалити пароль'
                             )}
                         </UiButton>
                         <UiButton
@@ -268,7 +268,7 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                             onClick={() => setConfirmDelete(false)}
                             disabled={submitting}
                         >
-                            {t('cancel')}
+                            Скасувати
                         </UiButton>
                     </div>
                 </div>

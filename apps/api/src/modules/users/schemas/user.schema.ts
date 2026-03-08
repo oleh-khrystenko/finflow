@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LANG } from '@finflow/types';
 import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
@@ -56,9 +55,6 @@ export class User {
 
     @Prop({ type: Date, default: null })
     accountDeletionRequestedAt!: Date | null;
-
-    @Prop({ required: true, default: LANG.UK })
-    preferredLang!: string;
 
     @Prop()
     lastLoginAt?: Date;

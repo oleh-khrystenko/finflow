@@ -424,18 +424,14 @@ describe('AuthService', () => {
             const before = new Date();
             before.setDate(before.getDate() + 30);
 
-            await authService.sendDeletionConfirmationEmail(
-                'test@gmail.com',
-                'uk'
-            );
+            await authService.sendDeletionConfirmationEmail('test@gmail.com');
 
             const after = new Date();
             after.setDate(after.getDate() + 30);
 
             expect(emailService.sendDeletionConfirmation).toHaveBeenCalledWith(
                 'test@gmail.com',
-                expect.any(Date),
-                'uk'
+                expect.any(Date)
             );
 
             const calledDate = (
@@ -445,19 +441,6 @@ describe('AuthService', () => {
                 before.getTime()
             );
             expect(calledDate.getTime()).toBeLessThanOrEqual(after.getTime());
-        });
-
-        it('should pass lang parameter to emailService', async () => {
-            await authService.sendDeletionConfirmationEmail(
-                'test@gmail.com',
-                'en'
-            );
-
-            expect(emailService.sendDeletionConfirmation).toHaveBeenCalledWith(
-                'test@gmail.com',
-                expect.any(Date),
-                'en'
-            );
         });
     });
 
@@ -491,8 +474,7 @@ describe('AuthService', () => {
             expect(emailService.sendMagicLink).toHaveBeenCalledWith(
                 'user@example.com',
                 expect.stringMatching(/^[a-f0-9]{64}$/),
-                'login',
-                'uk'
+                'login'
             );
         });
 
@@ -574,22 +556,6 @@ describe('AuthService', () => {
             await authService.sendMagicLink(email);
 
             expect(emailService.sendMagicLink).not.toHaveBeenCalled();
-        });
-
-        it('should use user preferredLang for email when user exists', async () => {
-            mockRedis.incr.mockResolvedValue(1);
-            jest.spyOn(usersService, 'findByEmail').mockResolvedValue({
-                preferredLang: 'en',
-            } as never);
-
-            await authService.sendMagicLink(email);
-
-            expect(emailService.sendMagicLink).toHaveBeenCalledWith(
-                email,
-                expect.any(String),
-                'login',
-                'en'
-            );
         });
 
         it('should rate limit per-email regardless of purpose', async () => {
@@ -738,7 +704,6 @@ describe('AuthService', () => {
             jest.spyOn(usersService, 'findByEmail').mockResolvedValue({
                 ...mockUser,
                 _id: { toString: () => '507f1f77bcf86cd799439011' },
-                preferredLang: 'uk',
             } as never);
             mockRedis.smembers.mockResolvedValue([]);
 
@@ -754,8 +719,7 @@ describe('AuthService', () => {
             );
             expect(emailService.sendDeletionConfirmation).toHaveBeenCalledWith(
                 'user@example.com',
-                expect.any(Date),
-                'uk'
+                expect.any(Date)
             );
         });
 
@@ -783,7 +747,6 @@ describe('AuthService', () => {
             jest.spyOn(usersService, 'findByEmail').mockResolvedValue({
                 ...mockUser,
                 _id: { toString: () => '507f1f77bcf86cd799439011' },
-                preferredLang: 'uk',
             } as never);
             mockRedis.smembers.mockResolvedValue([]);
 

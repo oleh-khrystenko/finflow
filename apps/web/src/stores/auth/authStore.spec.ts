@@ -7,7 +7,6 @@ const mockUser = {
     credits: { balance: 0, freeReportUsed: false },
     hasPassword: true,
     deletedAt: null,
-    preferredLang: 'uk' as const,
 };
 
 describe('authStore', () => {

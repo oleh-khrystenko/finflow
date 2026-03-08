@@ -21,7 +21,6 @@ import { JwtActiveGuard } from '../../common/guards/jwt-active.guard';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthService } from '../auth/auth.service';
 import { VerifyPasswordDto } from '../auth/dto/verify-password.dto';
-import { UpdateLangDto } from './dto/update-lang.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserDocument } from './schemas/user.schema';
 import { UsersService } from './users.service';
@@ -48,7 +47,6 @@ export class UsersController {
                 deletedAt: user.deletedAt ?? null,
                 accountDeletionRequestedAt:
                     user.accountDeletionRequestedAt ?? null,
-                preferredLang: user.preferredLang,
                 billing: user.billing
                     ? {
                           hasActiveSubscription:
@@ -83,22 +81,6 @@ export class UsersController {
                 deletedAt: updated!.deletedAt ?? null,
                 accountDeletionRequestedAt:
                     updated!.accountDeletionRequestedAt ?? null,
-                preferredLang: updated!.preferredLang,
-            },
-        };
-    }
-
-    @Patch('me/lang')
-    @UseGuards(JwtActiveGuard)
-    async updateLang(
-        @CurrentUser() user: UserDocument,
-        @Body() dto: UpdateLangDto
-    ): Promise<ApiMessageResponse> {
-        await this.usersService.updateLang(user.id as string, dto.lang);
-        return {
-            data: {
-                code: RESPONSE_CODE.LANG_UPDATED,
-                message: 'Language updated',
             },
         };
     }
@@ -141,10 +123,7 @@ export class UsersController {
 
         await this.usersService.softDelete(user._id.toString());
         await this.authService.revokeAllUserTokens(user._id.toString());
-        await this.authService.sendDeletionConfirmationEmail(
-            user.email,
-            user.preferredLang
-        );
+        await this.authService.sendDeletionConfirmationEmail(user.email);
 
         res.clearCookie('bid_refresh', { path: '/' });
 

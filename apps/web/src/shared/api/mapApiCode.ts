@@ -1,25 +1,25 @@
-import { RESPONSE_CODE_TYPE, RESPONSE_TYPE } from '@finflow/types';
+const MESSAGES: Record<string, string> = {
+    // Success
+    MAGIC_LINK_SENT: 'Посилання надіслано на вашу пошту',
+    LOGGED_OUT: 'Ви вийшли з акаунту',
+    ACCOUNT_DELETED: 'Акаунт видалено',
+    // Auth errors
+    UNAUTHORIZED: 'Час сесії вичерпано. Увійдіть знову',
+    INVALID_MAGIC_LINK: 'Посилання недійсне або прострочене',
+    // Payments errors
+    ALREADY_SUBSCRIBED: 'У вас вже є активна підписка.',
+    SUBSCRIPTION_REQUIRED: 'Для доступу потрібна активна підписка.',
+    NO_BILLING_ACCOUNT:
+        'Платіжний акаунт не знайдено. Оформіть підписку.',
+    // Generic errors
+    VALIDATION_ERROR: 'Перевірте введені дані',
+    RATE_LIMIT_EXCEEDED: 'Забагато запитів. Спробуйте через 15 хвилин',
+    INTERNAL_ERROR: 'Сталася помилка. Спробуйте пізніше',
+    NOT_FOUND: 'Сторінку не знайдено',
+};
 
-/**
- * Returns an i18n key for the given API response code.
- *
- * Priority:
- * 1. notifications.{module}.{code_lower}  (success codes, if module provided)
- * 2. errors.{module}.{code_lower}         (error codes, if module provided)
- * 3. errors.generic.{code_lower}          (fallback)
- * 4. errors.generic.unknown               (final fallback)
- */
-export function getApiMessageKey(code: string, module?: string): string {
-    const lower = code.toLowerCase();
-    const type = RESPONSE_CODE_TYPE[code as keyof typeof RESPONSE_CODE_TYPE];
+const FALLBACK = 'Сталася помилка. Спробуйте пізніше';
 
-    if (type === RESPONSE_TYPE.SUCCESS && module) {
-        return `notifications.${module}.${lower}`;
-    }
-
-    if (module) {
-        return `errors.${module}.${lower}`;
-    }
-
-    return `errors.generic.${lower}`;
+export function getApiMessage(code: string): string {
+    return MESSAGES[code] ?? FALLBACK;
 }

@@ -36,8 +36,8 @@ describe('EmailService', () => {
         const email = 'user@example.com';
         const token = 'abc123';
 
-        it('should use login template for purpose login (uk)', async () => {
-            await emailService.sendMagicLink(email, token, 'login', 'uk');
+        it('should use login template for purpose login', async () => {
+            await emailService.sendMagicLink(email, token, 'login');
 
             expect(sendSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -50,8 +50,8 @@ describe('EmailService', () => {
             expect(html).toContain(`token=${token}`);
         });
 
-        it('should use register template for purpose register (uk)', async () => {
-            await emailService.sendMagicLink(email, token, 'register', 'uk');
+        it('should use register template for purpose register', async () => {
+            await emailService.sendMagicLink(email, token, 'register');
 
             expect(sendSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -62,13 +62,8 @@ describe('EmailService', () => {
             expect(html).toContain('Завершити реєстрацію');
         });
 
-        it('should use reset-password template (uk)', async () => {
-            await emailService.sendMagicLink(
-                email,
-                token,
-                'reset-password',
-                'uk'
-            );
+        it('should use reset-password template', async () => {
+            await emailService.sendMagicLink(email, token, 'reset-password');
 
             expect(sendSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -79,13 +74,8 @@ describe('EmailService', () => {
             expect(html).toContain('Скинути пароль');
         });
 
-        it('should use delete-account template (uk)', async () => {
-            await emailService.sendMagicLink(
-                email,
-                token,
-                'delete-account',
-                'uk'
-            );
+        it('should use delete-account template', async () => {
+            await emailService.sendMagicLink(email, token, 'delete-account');
 
             expect(sendSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -95,30 +85,6 @@ describe('EmailService', () => {
             const html = sendSpy.mock.calls[0][0].html as string;
             expect(html).toContain('Підтвердити видалення');
             expect(html).toContain('30 днів');
-        });
-
-        it('should use English templates when lang is en', async () => {
-            await emailService.sendMagicLink(email, token, 'login', 'en');
-
-            expect(sendSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subject: 'Sign in to FinFlow',
-                })
-            );
-            const html = sendSpy.mock.calls[0][0].html as string;
-            expect(html).toContain('Sign In');
-        });
-
-        it('should use English register template', async () => {
-            await emailService.sendMagicLink(email, token, 'register', 'en');
-
-            expect(sendSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subject: 'Welcome to FinFlow',
-                })
-            );
-            const html = sendSpy.mock.calls[0][0].html as string;
-            expect(html).toContain('Complete Registration');
         });
 
         it('should include token in link for all purposes', async () => {
@@ -131,7 +97,7 @@ describe('EmailService', () => {
 
             for (const purpose of purposes) {
                 sendSpy.mockClear();
-                await emailService.sendMagicLink(email, token, purpose, 'uk');
+                await emailService.sendMagicLink(email, token, purpose);
 
                 const html = sendSpy.mock.calls[0][0].html as string;
                 expect(html).toContain(
@@ -140,63 +106,21 @@ describe('EmailService', () => {
             }
         });
 
-        it('should fallback to uk when unknown lang provided', async () => {
-            await emailService.sendMagicLink(
-                email,
-                token,
-                'login',
-                'fr' as any
-            );
-
-            expect(sendSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subject: 'Вхід до FinFlow',
-                })
-            );
-        });
-
         it('should throw error when Resend fails', async () => {
             sendSpy.mockResolvedValue({
                 error: { message: 'Send failed' },
             });
 
             await expect(
-                emailService.sendMagicLink(email, token, 'login', 'uk')
+                emailService.sendMagicLink(email, token, 'login')
             ).rejects.toThrow('Failed to send email: Send failed');
         });
 
-        it('should use English reset-password template', async () => {
-            await emailService.sendMagicLink(
-                email,
-                token,
-                'reset-password',
-                'en'
-            );
+        it('should set html lang to uk', async () => {
+            await emailService.sendMagicLink(email, token, 'login');
 
-            expect(sendSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subject: 'Reset Your Password',
-                })
-            );
             const html = sendSpy.mock.calls[0][0].html as string;
-            expect(html).toContain('Reset Password');
-        });
-
-        it('should use English delete-account template', async () => {
-            await emailService.sendMagicLink(
-                email,
-                token,
-                'delete-account',
-                'en'
-            );
-
-            expect(sendSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subject: 'Confirm Account Deletion',
-                })
-            );
-            const html = sendSpy.mock.calls[0][0].html as string;
-            expect(html).toContain('Confirm Deletion');
+            expect(html).toContain('lang="uk"');
         });
     });
 
@@ -204,12 +128,8 @@ describe('EmailService', () => {
         const email = 'user@example.com';
         const deletionDate = new Date('2026-03-29T12:00:00Z');
 
-        it('should send UK deletion confirmation with correct subject', async () => {
-            await emailService.sendDeletionConfirmation(
-                email,
-                deletionDate,
-                'uk'
-            );
+        it('should send deletion confirmation with correct subject', async () => {
+            await emailService.sendDeletionConfirmation(email, deletionDate);
 
             expect(sendSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -219,56 +139,18 @@ describe('EmailService', () => {
             );
         });
 
-        it('should send EN deletion confirmation with correct subject', async () => {
-            await emailService.sendDeletionConfirmation(
-                email,
-                deletionDate,
-                'en'
-            );
-
-            expect(sendSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    to: email,
-                    subject: 'Your account has been deactivated',
-                })
-            );
-        });
-
         it('should include formatted deletion date in HTML', async () => {
-            await emailService.sendDeletionConfirmation(
-                email,
-                deletionDate,
-                'uk'
-            );
+            await emailService.sendDeletionConfirmation(email, deletionDate);
 
             const html = sendSpy.mock.calls[0][0].html as string;
-            // Date should be formatted in uk-UA locale
             expect(html).toContain('2026');
         });
 
         it('should include WEB_URL link for recovery', async () => {
-            await emailService.sendDeletionConfirmation(
-                email,
-                deletionDate,
-                'uk'
-            );
+            await emailService.sendDeletionConfirmation(email, deletionDate);
 
             const html = sendSpy.mock.calls[0][0].html as string;
             expect(html).toContain('http://localhost:3000');
-        });
-
-        it('should use EN template for non-UK lang', async () => {
-            await emailService.sendDeletionConfirmation(
-                email,
-                deletionDate,
-                'fr' as any
-            );
-
-            expect(sendSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subject: 'Your account has been deactivated',
-                })
-            );
         });
 
         it('should throw error when Resend fails', async () => {
@@ -277,7 +159,7 @@ describe('EmailService', () => {
             });
 
             await expect(
-                emailService.sendDeletionConfirmation(email, deletionDate, 'uk')
+                emailService.sendDeletionConfirmation(email, deletionDate)
             ).rejects.toThrow('Failed to send email: Send failed');
         });
     });

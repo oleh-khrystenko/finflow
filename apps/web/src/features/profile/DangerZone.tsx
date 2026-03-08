@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
@@ -14,9 +13,6 @@ const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 const RESEND_COOLDOWN_SEC = 60;
 
 const DangerZone = () => {
-    const t = useTranslations('profile_page.danger_zone');
-    const tModal = useTranslations('delete_account_modal');
-    const locale = useLocale();
     const router = useRouter();
 
     const user = useAuthStore((s) => s.user);
@@ -56,12 +52,18 @@ const DangerZone = () => {
                     });
                 }
                 setCooldownSec(RESEND_COOLDOWN_SEC);
-                toast.success(tModal('magic_link_sent'));
+                toast.success(
+                    'Посилання для підтвердження надіслано на пошту'
+                );
             }
         } catch (error) {
             const is429 =
                 error instanceof AxiosError && error.response?.status === 429;
-            toast.error(is429 ? tModal('rate_limit') : tModal('invalid_password'));
+            toast.error(
+                is429
+                    ? 'Забагато запитів. Спробуйте через 15 хвилин'
+                    : 'Невірний пароль'
+            );
         } finally {
             setLoading(false);
         }
@@ -69,8 +71,8 @@ const DangerZone = () => {
 
     const handleDeleted = () => {
         setShowModal(false);
-        toast.success(tModal('deleted'));
-        router.push(`/${locale}/auth/signin`);
+        toast.success('Акаунт деактивовано');
+        router.push('/auth/signin');
     };
 
     const resendDisabled = loading || cooldownSec > 0;
@@ -78,24 +80,27 @@ const DangerZone = () => {
     return (
         <section className="space-y-4">
             <h2 className="text-text-primary text-xl font-semibold">
-                {t('heading')}
+                Небезпечна зона
             </h2>
 
             <div className="rounded-lg border border-error/30 bg-error/10 p-6">
                 <h3 className="text-text-primary font-medium">
-                    {t('delete_title')}
+                    Видалення акаунту
                 </h3>
                 <p className="text-text-secondary mt-1 text-sm">
-                    {t('delete_description')}
+                    Після видалення у вас є 30 днів для відновлення
+                    акаунту.
                 </p>
 
                 {isPendingDeletion && (
                     <div className="mt-4 rounded-lg border border-primary/30 bg-primary/10 p-4">
                         <p className="text-primary text-sm font-medium">
-                            {tModal('magic_link_sent_title')}
+                            Перевірте пошту
                         </p>
                         <p className="text-primary mt-1 text-sm">
-                            {tModal('magic_link_sent_description')}
+                            Посилання для підтвердження видалення акаунту
+                            надіслано на вашу адресу. Посилання дійсне 15
+                            хвилин.
                         </p>
                     </div>
                 )}
@@ -109,11 +114,9 @@ const DangerZone = () => {
                 >
                     {isPendingDeletion
                         ? cooldownSec > 0
-                            ? t('resend_button_cooldown', {
-                                  seconds: cooldownSec,
-                              })
-                            : t('resend_button')
-                        : t('delete_button')}
+                            ? `Надіслати повторно (${cooldownSec}с)`
+                            : 'Надіслати повторно'
+                        : 'Видалити акаунт'}
                 </UiButton>
             </div>
 

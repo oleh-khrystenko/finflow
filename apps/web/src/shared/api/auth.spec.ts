@@ -28,7 +28,6 @@ import {
     refreshToken,
     logout,
     getMe,
-    updatePreferredLang,
 } from './auth';
 
 describe('auth API functions', () => {
@@ -73,14 +72,13 @@ describe('auth API functions', () => {
     });
 
     describe('sendMagicLink', () => {
-        it('sends POST to /auth/magic-link/send with all params', async () => {
+        it('sends POST to /auth/magic-link/send with purpose', async () => {
             mockPost.mockResolvedValue({});
 
-            await sendMagicLink('test@example.com', 'uk', 'login');
+            await sendMagicLink('test@example.com', 'login');
 
             expect(mockPost).toHaveBeenCalledWith('/auth/magic-link/send', {
                 email: 'test@example.com',
-                lang: 'uk',
                 purpose: 'login',
             });
         });
@@ -92,7 +90,6 @@ describe('auth API functions', () => {
 
             expect(mockPost).toHaveBeenCalledWith('/auth/magic-link/send', {
                 email: 'test@example.com',
-                lang: undefined,
                 purpose: undefined,
             });
         });
@@ -253,18 +250,6 @@ describe('auth API functions', () => {
 
             expect(mockGet).toHaveBeenCalledWith('/users/me');
             expect(result).toEqual(user);
-        });
-    });
-
-    describe('updatePreferredLang', () => {
-        it('sends PATCH to /users/me/lang', async () => {
-            mockPatch.mockResolvedValue({});
-
-            await updatePreferredLang('en');
-
-            expect(mockPatch).toHaveBeenCalledWith('/users/me/lang', {
-                lang: 'en',
-            });
         });
     });
 });

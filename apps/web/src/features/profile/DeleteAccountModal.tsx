@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { AxiosError } from 'axios';
 import UiButton from '@/shared/ui/UiButton';
 import UiPasswordInput from '@/shared/ui/UiPasswordInput';
@@ -17,8 +16,6 @@ const DeleteAccountModal = ({
     onClose,
     onDeleted,
 }: DeleteAccountModalProps) => {
-    const t = useTranslations('delete_account_modal');
-
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -57,9 +54,9 @@ const DeleteAccountModal = ({
                     ? err.response?.data?.error?.code
                     : undefined;
             if (code === 'UNAUTHORIZED') {
-                setError(t('invalid_password'));
+                setError('Невірний пароль');
             } else {
-                setError(t('invalid_password'));
+                setError('Невірний пароль');
             }
         } finally {
             setSubmitting(false);
@@ -73,10 +70,11 @@ const DeleteAccountModal = ({
         >
             <div className="bg-background mx-4 w-full max-w-md rounded-xl p-6 shadow-xl">
                 <h2 className="text-text-primary text-lg font-semibold">
-                    {t('title')}
+                    Видалення акаунту
                 </h2>
                 <p className="text-text-secondary mt-2 text-sm">
-                    {t('description')}
+                    Ви впевнені? Ваш акаунт буде деактивовано. У вас буде
+                    30 днів для відновлення.
                 </p>
 
                 <form
@@ -85,7 +83,7 @@ const DeleteAccountModal = ({
                 >
                     <div>
                         <label className="text-text-secondary mb-1 block text-sm">
-                            {t('password_label')}
+                            Введіть пароль для підтвердження
                         </label>
                         <UiPasswordInput
                             value={password}
@@ -105,7 +103,7 @@ const DeleteAccountModal = ({
                             onClick={onClose}
                             disabled={submitting}
                         >
-                            {t('cancel_button')}
+                            Скасувати
                         </UiButton>
                         <UiButton
                             type="submit"
@@ -117,7 +115,7 @@ const DeleteAccountModal = ({
                             {submitting ? (
                                 <UiSpinner size="sm" />
                             ) : (
-                                t('confirm_button')
+                                'Видалити акаунт'
                             )}
                         </UiButton>
                     </div>

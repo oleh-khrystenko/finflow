@@ -11,7 +11,7 @@
 |-----------|------|------|
 | Tone & Style | [tone.md](tone.md) | Тон та стиль user-facing повідомлень |
 | Fail Fast | [fail-fast.md](fail-fast.md) | Політика обов'язкових env vars |
-| i18n | [i18n.md](i18n.md) | Синхронізація мови між фронтом та бекендом |
+| i18n | [i18n.md](i18n.md) | Мова — українська (єдина), маппінг API кодів |
 | Env Sync | [env-sync.md](env-sync.md) | Синхронізація env vars між env.ts, .env та .env.example |
 | Modular Boundaries | [modular-boundaries.md](modular-boundaries.md) | Core/Agency розділення, однонаправлені залежності, fork checklist |
 | UI Primitives | [ui-primitives.md](ui-primitives.md) | Заборона нативних HTML-елементів, єдиний набір Ui-компонентів |
