@@ -12,6 +12,7 @@ import {
     changePassword,
     deletePassword,
     getMe,
+    getApiMessage,
 } from '@/shared/api';
 import { useAuthStore } from '@/stores/auth';
 
@@ -69,8 +70,16 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
             setUser(me);
             toast.success('Пароль встановлено');
             setNewPwd('');
-        } catch {
-            toast.error('Невірний пароль');
+        } catch (err) {
+            const code =
+                err instanceof AxiosError
+                    ? err.response?.data?.error?.code
+                    : undefined;
+            if (code === 'VALIDATION_ERROR') {
+                toast.error('Пароль повинен містити мінімум 8 символів');
+            } else {
+                toast.error(code ? getApiMessage(code) : getApiMessage('INTERNAL_ERROR'));
+            }
         } finally {
             setSubmitting(false);
         }
@@ -100,9 +109,9 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
                     ? err.response?.data?.error?.code
                     : undefined;
             if (code === 'UNAUTHORIZED') {
-                toast.error('Невірний пароль');
+                toast.error('Поточний пароль невірний');
             } else {
-                toast.error('Невірний пароль');
+                toast.error(code ? getApiMessage(code) : getApiMessage('INTERNAL_ERROR'));
             }
         } finally {
             setSubmitting(false);
@@ -117,8 +126,12 @@ const SecuritySection = ({ user, mode }: SecuritySectionProps) => {
             setUser(me);
             toast.success('Пароль видалено');
             setConfirmDelete(false);
-        } catch {
-            toast.error('Невірний пароль');
+        } catch (err) {
+            const code =
+                err instanceof AxiosError
+                    ? err.response?.data?.error?.code
+                    : undefined;
+            toast.error(code ? getApiMessage(code) : getApiMessage('INTERNAL_ERROR'));
         } finally {
             setSubmitting(false);
         }
