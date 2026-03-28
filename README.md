@@ -16,12 +16,21 @@ This project is structured as a **Turborepo Monorepo** to ensure code reusabilit
 - **Shared (`packages/types`):** A dedicated package for shared TypeScript interfaces and DTOs, ensuring end-to-end type safety between the client and server.
 
 ## 📁 Repository Structure
-```text
-finflow/
-├── apps/
-│   ├── api/          # NestJS application (Core business logic, Auth, Billing)
-│   └── web/          # Next.js application (User dashboard, Landing)
-├── packages/
-│   └── types/        # Shared TypeScript interfaces (End-to-end type safety)
-├── docs/             # Technical and product documentation
-└── turbo.json        # Monorepo task orchestration
+
+    finflow/
+    ├── apps/
+    │   ├── api/          # NestJS application (Core business logic, Auth, Billing)
+    │   └── web/          # Next.js application (User dashboard, Landing)
+    ├── packages/
+    │   └── types/        # Shared TypeScript interfaces (End-to-end type safety)
+    ├── docs/             # Technical and product documentation
+    └── turbo.json        # Monorepo task orchestration
+
+
+## 🛡 Engineering Principles
+1. **Strict Type Safety:** End-to-end typing prevents runtime errors and API mismatches.
+2. **Modular Monolith:** The backend is logically separated into isolated domains (Core, Agency/Business Logic), making it easy to extract or scale specific features.
+3. **Security First:** Environment variables are strictly validated at startup. The application fails fast if critical configuration is missing, preventing insecure states.
+
+---
+*Built by [CyanShip](https://cyanship.com) — Launch your B2B platform faster.*
